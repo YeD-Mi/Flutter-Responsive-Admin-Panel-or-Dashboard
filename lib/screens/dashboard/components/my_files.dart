@@ -1,4 +1,3 @@
-
 import 'package:admin/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:admin/models/MyFiles.dart';
@@ -19,7 +18,7 @@ class MyFiles extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "My Files",
+              "Veriler",
               style: Theme.of(context).textTheme.titleMedium,
             ),
             ElevatedButton.icon(

@@ -1,50 +1,57 @@
-class RecentFile {
-  final String? icon, title, date, size;
+class OrderInfo {
+  final String? icon, masa, adsoyad, tarih, durum;
 
-  RecentFile({this.icon, this.title, this.date, this.size});
+  OrderInfo({this.icon, this.masa, this.adsoyad, this.tarih, this.durum});
 }
 
 List demoRecentFiles = [
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/xd_file.svg",
-    title: "XD File",
-    date: "01-03-2021",
-    size: "3.5mb",
+    masa: "Masa 1",
+    adsoyad: "Ahmet YILDIZ",
+    tarih: "29.06.2024 21:24",
+    durum: "Beklemede",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/Figma_file.svg",
-    title: "Figma File",
-    date: "27-02-2021",
-    size: "19.0mb",
+    masa: "Masa 2",
+    adsoyad: "Ece YILMAZ",
+    tarih: "29.06.2024 21:18",
+    durum: "Beklemede",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/doc_file.svg",
-    title: "Document",
-    date: "23-02-2021",
-    size: "32.5mb",
+    masa: "Masa 3",
+    adsoyad: "Hande KAHVECİ",
+    tarih: "29.06.2024 21:15",
+    durum: "Hazırlanıyor",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/sound_file.svg",
-    title: "Sound File",
-    date: "21-02-2021",
-    size: "3.5mb",
+    masa: "Masa 4",
+    adsoyad: "Mert KABAK",
+    tarih: "29.06.2024 20:59",
+    durum: "Teslim Edildi",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/media_file.svg",
-    title: "Media File",
-    date: "23-02-2021",
-    size: "2.5gb",
+    masa: "Masa 5",
+    adsoyad: "Semiha TUNCER",
+    tarih: "29.06.2024 20:42",
+    durum: "Teslim Edildi",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/pdf_file.svg",
-    title: "Sales PDF",
-    date: "25-02-2021",
-    size: "3.5mb",
+    masa: "Masa 6",
+    adsoyad: "Ayşe YASA",
+    tarih: "29.06.2024 20:21",
+    durum: "Teslim Edildi",
   ),
-  RecentFile(
+  OrderInfo(
     icon: "assets/icons/excel_file.svg",
-    title: "Excel File",
-    date: "25-02-2021",
-    size: "34.5mb",
+    masa: "Masa 7",
+    adsoyad: "Yeliz BULUT",
+    tarih: "29.06.2024 20:08",
+    durum: "Teslim Edildi",
   ),
 ];

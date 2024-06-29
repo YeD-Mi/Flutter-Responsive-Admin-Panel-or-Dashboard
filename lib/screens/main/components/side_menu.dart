@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SideMenu extends StatelessWidget {
+  final Function(int) onMenuItemSelected;
   const SideMenu({
     Key? key,
+    required this.onMenuItemSelected,
   }) : super(key: key);
 
   @override
@@ -12,47 +14,56 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            child: Image.asset("assets/images/logo.png"),
+            child: Image.asset("assets/images/enjula-logo1.png"),
           ),
           DrawerListTile(
-            title: "Dashboard",
+            title: "Ana Sayfa",
             svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(0);
+            },
           ),
           DrawerListTile(
-            title: "Transaction",
+            title: "Siparişler",
+            svgSrc: "assets/icons/menu_dashboard.svg",
+            press: () {
+              onMenuItemSelected(1);
+            },
+          ),
+          DrawerListTile(
+            title: "Masalar",
             svgSrc: "assets/icons/menu_tran.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(2);
+            },
           ),
           DrawerListTile(
-            title: "Task",
+            title: "Kategoriler",
             svgSrc: "assets/icons/menu_task.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(3);
+            },
           ),
           DrawerListTile(
-            title: "Documents",
+            title: "Menüler",
             svgSrc: "assets/icons/menu_doc.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(4);
+            },
           ),
           DrawerListTile(
-            title: "Store",
+            title: "Profil",
             svgSrc: "assets/icons/menu_store.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(5);
+            },
           ),
           DrawerListTile(
-            title: "Notification",
-            svgSrc: "assets/icons/menu_notification.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Profile",
-            svgSrc: "assets/icons/menu_profile.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Settings",
+            title: "Ayarlar",
             svgSrc: "assets/icons/menu_setting.svg",
-            press: () {},
+            press: () {
+              onMenuItemSelected(6);
+            },
           ),
         ],
       ),

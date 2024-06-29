@@ -22,7 +22,7 @@ class RecentFiles extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Recent Files",
+            "Son Siparişler",
             style: Theme.of(context).textTheme.titleMedium,
           ),
           SizedBox(
@@ -32,13 +32,19 @@ class RecentFiles extends StatelessWidget {
               // minWidth: 600,
               columns: [
                 DataColumn(
-                  label: Text("File Name"),
+                  label: Text("Masa No"),
                 ),
                 DataColumn(
-                  label: Text("Date"),
+                  label: Text("Müşteri Ad Soyad"),
                 ),
                 DataColumn(
-                  label: Text("Size"),
+                  label: Text("Tarih"),
+                ),
+                DataColumn(
+                  label: Text("Sipariş Durumu"),
+                ),
+                DataColumn(
+                  label: Text("-"),
                 ),
               ],
               rows: List.generate(
@@ -66,13 +72,15 @@ DataRow recentFileDataRow(OrderInfo fileInfo) {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-              child: Text(fileInfo.adsoyad!),
+              child: Text(fileInfo.masa!),
             ),
           ],
         ),
       ),
+      DataCell(Text(fileInfo.adsoyad!)),
       DataCell(Text(fileInfo.tarih!)),
       DataCell(Text(fileInfo.durum!)),
+      DataCell(ElevatedButton(onPressed: () {}, child: Text("İşlem"))),
     ],
   );
 }
