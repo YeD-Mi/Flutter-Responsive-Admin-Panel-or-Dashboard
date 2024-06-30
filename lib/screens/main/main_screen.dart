@@ -1,5 +1,6 @@
 import 'package:admin/controllers/MenuAppController.dart';
 import 'package:admin/responsive.dart';
+import 'package:admin/screens/categories/categories_screen.dart';
 import 'package:admin/screens/dashboard/dashboard_screen.dart';
 import 'package:admin/screens/tables/tables_screen.dart';
 import 'package:admin/screens/orders/orders_screen.dart';
@@ -63,6 +64,8 @@ class _MainScreenState extends State<MainScreen> {
         return OrdersScreen();
       case 2:
         return TablesScreen();
+      case 3:
+        return CategoriesScreen();
       // Diğer ekranlar için case'ler ekleyin
       default:
         return DashboardScreen(); // Varsayılan olarak ana sayfa

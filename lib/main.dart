@@ -1,6 +1,7 @@
 import 'package:admin/constants.dart';
 import 'package:admin/controllers/MenuAppController.dart';
 import 'package:admin/firebase_options.dart';
+import 'package:admin/screens/categories/categories_model_screen.dart';
 import 'package:admin/screens/tables/tables_model_screen.dart';
 import 'package:admin/screens/main/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => TablesPageViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CategoriesPageViewModel(),
         ),
       ],
       child: MaterialApp(
