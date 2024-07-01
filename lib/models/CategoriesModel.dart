@@ -5,6 +5,7 @@ class CategoriesModel {
   String? creative;
   String? categoryID;
   String? name;
+  String? parentCategory;
 
   CategoriesModel(this.creationDate, this.creative, this.categoryID, this.name);
 
@@ -13,6 +14,7 @@ class CategoriesModel {
     creative = json["creative"];
     categoryID = json["categoryID"];
     name = json["name"];
+    parentCategory = json["parentCategory"];
   }
 
   Map<String, dynamic> toJson() {
@@ -22,6 +24,7 @@ class CategoriesModel {
     data["creative"] = creative;
     data["categoryID"] = categoryID;
     data["name"] = name;
+    data["parentCategory"] = parentCategory;
     return data;
   }
 

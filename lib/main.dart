@@ -1,7 +1,10 @@
+import 'package:admin/authController.dart';
 import 'package:admin/constants.dart';
 import 'package:admin/controllers/MenuAppController.dart';
 import 'package:admin/firebase_options.dart';
+import 'package:admin/screens/Menus/Menus_model_screen.dart';
 import 'package:admin/screens/categories/categories_model_screen.dart';
+import 'package:admin/screens/login/login_screen.dart';
 import 'package:admin/screens/tables/tables_model_screen.dart';
 import 'package:admin/screens/main/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,17 +34,31 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => CategoriesPageViewModel(),
         ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Admin Panel',
-        theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: bgColor,
-          textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
-              .apply(bodyColor: Colors.white),
-          canvasColor: secondaryColor,
+        ChangeNotifierProvider(
+          create: (context) => MenusPageViewModel(),
         ),
-        home: MainScreen(),
+        ChangeNotifierProvider(
+          create: (context) =>
+              AuthController(), // AuthController'i sağlayıcıya ekliyoruz
+        ),
+      ],
+      child: Consumer<AuthController>(
+        builder: (context, authController, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Flutter Admin Panel',
+            theme: ThemeData.dark().copyWith(
+              scaffoldBackgroundColor: bgColor,
+              textTheme:
+                  GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+                      .apply(bodyColor: Colors.white),
+              canvasColor: secondaryColor,
+            ),
+            home: authController.isLoggedIn
+                ? MainScreen()
+                : LoginScreen(), // Kullanıcı durumuna göre ekranı belirliyoruz
+          );
+        },
       ),
     );
   }

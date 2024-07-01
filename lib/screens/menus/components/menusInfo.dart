@@ -1,40 +1,39 @@
-import 'package:admin/models/CategoriesModel.dart';
+import 'package:admin/models/MenusModel.dart';
 import 'package:admin/responsive.dart';
-import 'package:admin/screens/categories/categories_model_screen.dart';
+import 'package:admin/screens/Menus/Menus_model_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../constants.dart';
 
-class Categoriesinfo extends StatefulWidget {
-  const Categoriesinfo({Key? key}) : super(key: key);
+class Menusinfo extends StatefulWidget {
+  const Menusinfo({Key? key}) : super(key: key);
 
   @override
-  _CategoriesInfoState createState() => _CategoriesInfoState();
+  _MenusInfoState createState() => _MenusInfoState();
 }
 
-class _CategoriesInfoState extends State<Categoriesinfo> {
-  late Future<void> _fetchCategoriesFuture;
+class _MenusInfoState extends State<Menusinfo> {
+  late Future<void> _fetchMenusFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchCategoriesFuture =
-        Provider.of<CategoriesPageViewModel>(context, listen: false)
-            .fetchCategories();
+    _fetchMenusFuture =
+        Provider.of<MenusPageViewModel>(context, listen: false).fetchMenus();
   }
 
   @override
   Widget build(BuildContext context) {
-    final myCategories = Provider.of<CategoriesPageViewModel>(context);
+    final myMenus = Provider.of<MenusPageViewModel>(context);
 
     return FutureBuilder(
-      future: _fetchCategoriesFuture,
+      future: _fetchMenusFuture,
       builder: (context, snapshot) {
-        if (myCategories.state == CategoriesPageState.busy) {
+        if (myMenus.state == MenusPageState.busy) {
           return Center(child: CircularProgressIndicator());
-        } else if (myCategories.state == CategoriesPageState.error) {
-          return Center(child: Text('Error loading categories'));
+        } else if (myMenus.state == MenusPageState.error) {
+          return Center(child: Text('Error loading Menus'));
         } else {
           return Container(
             padding: EdgeInsets.all(defaultPadding),
@@ -49,7 +48,7 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Kategoriler",
+                      "Menüler",
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     ElevatedButton.icon(
@@ -64,7 +63,7 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                         _showAddCategoryDialog(context);
                       },
                       icon: Icon(Icons.add),
-                      label: Text("Yeni Kategori"),
+                      label: Text("Yeni Menü"),
                     ),
                   ],
                 ),
@@ -88,9 +87,8 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                       ),
                     ],
                     rows: List.generate(
-                      myCategories.categories.length,
-                      (index) =>
-                          categoryInfoDataRow(myCategories.categories[index]),
+                      myMenus.Menus.length,
+                      (index) => menuInfoDataRow(myMenus.Menus[index]),
                     ),
                   ),
                 ),
@@ -112,7 +110,7 @@ void _showAddCategoryDialog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('Yeni Kategori'),
+        title: Text('Yeni Menü'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -141,13 +139,20 @@ void _showAddCategoryDialog(BuildContext context) {
           ),
           ElevatedButton(
             onPressed: () {
-              final newCategory = CategoriesModel(
+              final newMenu = MenusModel(
                   Timestamp.fromDate(DateTime.now()),
                   _creativeController.text,
                   _categoryIDController.text,
-                  _nameController.text);
-              Provider.of<CategoriesPageViewModel>(context, listen: false)
-                  .addCategory(newCategory);
+                  _nameController.text,
+                  "",
+                  "",
+                  Timestamp.fromDate(DateTime.now()),
+                  "",
+                  [],
+                  "",
+                  "");
+              Provider.of<MenusPageViewModel>(context, listen: false)
+                  .addMenu(newMenu);
               Navigator.of(context).pop();
             },
             child: Text('Ekle'),
@@ -158,13 +163,13 @@ void _showAddCategoryDialog(BuildContext context) {
   );
 }
 
-DataRow categoryInfoDataRow(CategoriesModel categoryInfo) {
+DataRow menuInfoDataRow(MenusModel menuInfo) {
   return DataRow(
     cells: [
-      DataCell(Text(categoryInfo.parentCategory!)),
-      DataCell(Text(categoryInfo.name!)),
-      DataCell(Text(categoryInfo.creative!)),
-      DataCell(Text(categoryInfo.creationDate!.toDate().toString())),
+      DataCell(Text(menuInfo.parentCategory!)),
+      DataCell(Text(menuInfo.category!)),
+      DataCell(Text(menuInfo.creative!)),
+      DataCell(Text(menuInfo.creationDate!.toDate().toString())),
     ],
   );
 }
