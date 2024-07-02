@@ -1,48 +1,63 @@
-import 'package:admin/models/MenusModel.dart';
-import 'package:admin/screens/menus/menus_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:admin/models/UsersModel.dart';
+import 'package:admin/screens/login/login_service.dart';
+import 'package:admin/authController.dart';
 
 enum LoginPageState { idle, busy, error }
 
 class LoginPageViewModel with ChangeNotifier {
   LoginPageState _state = LoginPageState.idle;
-  List<MenusModel> _Menus = [];
+  String? _errorMessage;
+  UsersModel? _currentUser;
 
   LoginPageState get state => _state;
-  List<MenusModel> get Menus => _Menus;
+  String? get errorMessage => _errorMessage;
+  UsersModel? get currentUser => _currentUser;
 
-  set state(LoginPageState state) {
+  final LoginService _loginService = LoginService();
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  final AuthController authController;
+
+  LoginPageViewModel(this.authController);
+
+  void setState(LoginPageState state) {
     _state = state;
     notifyListeners();
   }
 
-  Future<void> fetchMenus() async {
-    state = LoginPageState.busy;
+  void setError(String errorMessage) {
+    _errorMessage = errorMessage;
+    notifyListeners();
+  }
+
+  Future<bool> login(String email, String password) async {
+    setState(LoginPageState.busy);
     try {
-      MenusService menusService = MenusService();
-      QuerySnapshot snapshot = await menusService.getMenus().first;
-      _Menus =
-          snapshot.docs.map((doc) => MenusModel.fromFirestore(doc)).toList();
-      state = LoginPageState.idle;
+      _currentUser = await _loginService.connectWithMail(email, password);
+      if (_currentUser != null) {
+        authController
+            .login(); // Kullanıcı giriş yaptıktan sonra durumu güncelle
+        setState(LoginPageState.idle);
+        return true; // Giriş başarılı
+      } else {
+        setError('Email veya şifre hatalı!');
+        setState(LoginPageState.error);
+        return false; // Giriş başarısız
+      }
     } catch (e) {
-      state = LoginPageState.error;
+      setError(e.toString());
+      setState(LoginPageState.error);
+      return false; // Giriş başarısız
     }
   }
 
-  int get length => _Menus.length;
-
-  MenusModel operator [](int index) => _Menus[index];
-
-  Future<void> addMenu(MenusModel newMenu) async {
-    state = LoginPageState.busy;
-    try {
-      MenusService menusService = MenusService();
-      await menusService.addMenu(newMenu);
-      _Menus.add(newMenu);
-      state = LoginPageState.idle;
-    } catch (e) {
-      state = LoginPageState.error;
-    }
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }

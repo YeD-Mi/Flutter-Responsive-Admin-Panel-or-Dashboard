@@ -4,6 +4,7 @@ import 'package:admin/controllers/MenuAppController.dart';
 import 'package:admin/firebase_options.dart';
 import 'package:admin/screens/Menus/Menus_model_screen.dart';
 import 'package:admin/screens/categories/categories_model_screen.dart';
+import 'package:admin/screens/login/login_model_screen.dart';
 import 'package:admin/screens/login/login_screen.dart';
 import 'package:admin/screens/tables/tables_model_screen.dart';
 import 'package:admin/screens/main/main_screen.dart';
@@ -26,6 +27,15 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (context) => AuthController(),
+        ),
+        ChangeNotifierProxyProvider<AuthController, LoginPageViewModel>(
+          create: (context) => LoginPageViewModel(
+              Provider.of<AuthController>(context, listen: false)),
+          update: (context, authController, loginPageViewModel) =>
+              LoginPageViewModel(authController),
+        ),
+        ChangeNotifierProvider(
           create: (context) => MenuAppController(),
         ),
         ChangeNotifierProvider(
@@ -36,10 +46,6 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => MenusPageViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              AuthController(), // AuthController'i sağlayıcıya ekliyoruz
         ),
       ],
       child: Consumer<AuthController>(

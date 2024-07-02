@@ -9,7 +9,7 @@ class MenusModel {
   String? lastModified;
   Timestamp? lastModifiedDate;
   String? menuID;
-  List<String>? picURL;
+  String? image;
   String? price;
   String? title;
 
@@ -22,7 +22,7 @@ class MenusModel {
       this.lastModified,
       this.lastModifiedDate,
       this.menuID,
-      this.picURL,
+      this.image,
       this.price,
       this.title);
 
@@ -35,9 +35,7 @@ class MenusModel {
     lastModified = json["lastModified"];
     lastModifiedDate = json["lastModifiedDate"];
     menuID = json["menuID"];
-    picURL = (json["picURL"] as List<dynamic>?)
-        ?.map((item) => item as String)
-        .toList();
+    image = json["image"];
     price = json["price"];
     title = json["title"];
   }
@@ -53,7 +51,7 @@ class MenusModel {
     data["lastModified"] = lastModified;
     data["lastModifiedDate"] = lastModifiedDate;
     data["menuID"] = menuID;
-    data["picURL"] = picURL;
+    data["image"] = image;
     data["price"] = price;
     data["title"] = title;
     return data;
