@@ -1,7 +1,8 @@
+import 'package:admin/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:admin/models/UsersModel.dart';
 import 'package:admin/screens/login/login_service.dart';
-import 'package:admin/authController.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum LoginPageState { idle, busy, error }
 
@@ -12,16 +13,12 @@ class LoginPageViewModel with ChangeNotifier {
 
   LoginPageState get state => _state;
   String? get errorMessage => _errorMessage;
-  UsersModel? get currentUser => _currentUser;
+  UsersModel? get myCurrentUser => _currentUser;
 
   final LoginService _loginService = LoginService();
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  final AuthController authController;
-
-  LoginPageViewModel(this.authController);
 
   void setState(LoginPageState state) {
     _state = state;
@@ -38,8 +35,11 @@ class LoginPageViewModel with ChangeNotifier {
     try {
       _currentUser = await _loginService.connectWithMail(email, password);
       if (_currentUser != null) {
-        authController
-            .login(); // Kullanıcı giriş yaptıktan sonra durumu güncelle
+        currentUser = _currentUser;
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('currentUserID', currentUser!.userID!);
+        print(currentUser!.userID!);
+
         setState(LoginPageState.idle);
         return true; // Giriş başarılı
       } else {

@@ -1,13 +1,14 @@
 import 'dart:convert';
-
+import 'package:admin/date_service.dart';
+import 'package:admin/screens/menus/components/edit_menu_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:admin/models/MenusModel.dart';
 import 'package:admin/responsive.dart';
-import 'package:admin/screens/Menus/Menus_model_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:admin/screens/menus/menus_model_screen.dart'; // doğru dosya yolu kontrol edin
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:provider/provider.dart';
 import '../../../constants.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class Menusinfo extends StatefulWidget {
   const Menusinfo({Key? key}) : super(key: key);
@@ -29,7 +30,6 @@ class _MenusInfoState extends State<Menusinfo> {
   @override
   Widget build(BuildContext context) {
     final myMenus = Provider.of<MenusPageViewModel>(context);
-
     return FutureBuilder(
       future: _fetchMenusFuture,
       builder: (context, snapshot) {
@@ -59,7 +59,7 @@ class _MenusInfoState extends State<Menusinfo> {
                         ),
                       ),
                       onPressed: () {
-                        _showAddMenuDialog(context);
+                        showAddMenuDialog(context);
                       },
                       icon: Icon(Icons.add),
                       label: Text("Yeni Menü"),
@@ -91,8 +91,8 @@ class _MenusInfoState extends State<Menusinfo> {
                       ),
                     ],
                     rows: List.generate(
-                      myMenus.Menus.length,
-                      (index) => menuInfoDataRow(myMenus.Menus[index], context),
+                      myMenus.menus.length,
+                      (index) => menuInfoDataRow(myMenus.menus[index], context),
                     ),
                   ),
                 )
@@ -115,93 +115,17 @@ DataRow menuInfoDataRow(MenusModel menuInfo, BuildContext context) {
       DataCell(Icon(Icons.image)),
       DataCell(ElevatedButton(
           onPressed: () {
-            _showDetailMenuDialog(menuInfo, context);
+            showDetailMenuDialog(menuInfo, context);
           },
           child: Text("İşlem")))
     ],
   );
 }
 
-void _showAddMenuDialog(BuildContext context) {
-  final _categoryIDController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _creativeController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Yeni Menü'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _categoryIDController,
-                decoration: InputDecoration(labelText: 'Başlık'),
-              ),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'QR URL'),
-              ),
-              TextField(
-                controller: _creativeController,
-                decoration: InputDecoration(labelText: 'Oluşturan'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newMenu = MenusModel(
-                  Timestamp.fromDate(DateTime.now()),
-                  _creativeController.text,
-                  _categoryIDController.text,
-                  _nameController.text,
-                  "",
-                  "",
-                  Timestamp.fromDate(DateTime.now()),
-                  "",
-                  "",
-                  "",
-                  "");
-              Provider.of<MenusPageViewModel>(context, listen: false)
-                  .addMenu(newMenu);
-              Navigator.of(context).pop();
-            },
-            child: Text('Ekle'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
-  final _categoryController = TextEditingController();
+void showAddMenuDialog(BuildContext context) async {
   final _productController = TextEditingController();
   final _contentController = TextEditingController();
   final _priceController = TextEditingController();
-
-  _productController.text = menuInfo.title!;
-  _contentController.text = menuInfo.contents!;
-  _priceController.text = menuInfo.price!;
-
-  double horizontalMargin;
-  if (Responsive.isDesktop(context)) {
-    horizontalMargin = 450.0;
-  } else if (Responsive.isTablet(context)) {
-    horizontalMargin = 150.0;
-  } else {
-    horizontalMargin = 10.0;
-  }
 
   double spaceHeight;
   if (Responsive.isDesktop(context)) {
@@ -212,109 +136,165 @@ void _showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
     spaceHeight = 10.0;
   }
 
-  // Placeholder for the selected image URL
-  String? selectedImageUrl = menuInfo.image;
+  String? selectedImageUrl = "https://waterstation.com.tr/img/default.jpg";
 
-  String? _selectedParentCategory = menuInfo.parentCategory!;
+  String? _selectedParentCategory = "Yiyecek";
   List<String> _parentCategories = ["Yiyecek", "İçecek"];
+
+  List<String> _categories = [];
+  String? _selectedCategory;
+
+  await Provider.of<MenusPageViewModel>(context, listen: false)
+      .fetchCategories();
+  final myMenus = context.read<MenusPageViewModel>();
+
+  if (myMenus.categories.isNotEmpty) {
+    _categories = myMenus
+        .getFilteredCategories(_selectedParentCategory)
+        .map((category) => category.name!)
+        .toList();
+  }
 
   showDialog(
     context: context,
     builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            title: Center(
-              child: Column(
-                children: [
-                  Text('Menü Düzenle',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                  SizedBox(height: spaceHeight),
-                  Divider(
-                    color: Colors.white,
-                  ),
-                ],
+      return AlertDialog(
+        shadowColor: Colors.yellow,
+        backgroundColor: Colors.grey.shade800,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        title: Center(
+          child: Column(
+            children: [
+              Text(
+                'Yeni Menü',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: spaceHeight),
-                  DropdownButtonFormField<String>(
-                    value: _selectedParentCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Üst Kategori',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+              SizedBox(height: spaceHeight),
+              Divider(
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: spaceHeight),
+                    DropdownButtonFormField<String>(
+                      value: _selectedParentCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Üst Kategori',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      items: _parentCategories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedParentCategory = newValue!;
+                          _categories = myMenus
+                              .getFilteredCategories(_selectedParentCategory!)
+                              .map((category) => category.name!)
+                              .toList();
+                        });
+                      },
+                    ),
+                    SizedBox(height: spaceHeight),
+                    DropdownButtonFormField<String>(
+                      value: _categories.isNotEmpty ? _categories[0] : null,
+                      decoration: InputDecoration(
+                        labelText: 'Kategori',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      items: _categories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _productController,
+                      decoration: InputDecoration(
+                        labelText: 'Ürün',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
                     ),
-                    items: _parentCategories.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedParentCategory = newValue;
-                      });
-                    },
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _categoryController,
-                    decoration: InputDecoration(
-                      labelText: 'Kategori',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _contentController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: 'İçerik',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _productController,
-                    decoration: InputDecoration(
-                      labelText: 'Ürün',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _priceController,
+                      decoration: InputDecoration(
+                        labelText: 'Fiyat',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
+                      keyboardType: TextInputType.number,
                     ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _contentController,
-                    maxLines: 3, // İçerik alanının üç satıra sığması için
-                    decoration: InputDecoration(
-                      labelText: 'İçerik',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: 'Fiyat',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  SizedBox(height: spaceHeight),
-                  // Image display and picker
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
+                    SizedBox(height: spaceHeight),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final image =
+                                  await ImagePickerWeb.getImageAsBytes();
+                              if (image != null) {
+                                setState(() {
+                                  selectedImageUrl = 'data:image/png;base64,' +
+                                      base64Encode(image);
+                                });
+                              }
+                            },
+                            child: selectedImageUrl != null
+                                ? Image.network(
+                                    selectedImageUrl!,
+                                    height: spaceHeight * 7,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: Colors.grey[300],
+                                    child: Icon(Icons.add),
+                                  ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () async {
                             final image =
                                 await ImagePickerWeb.getImageAsBytes();
                             if (image != null) {
@@ -324,83 +304,70 @@ void _showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
                               });
                             }
                           },
-                          child: selectedImageUrl != null
-                              ? Image.network(
-                                  selectedImageUrl!,
-                                  height: spaceHeight * 7,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  color: Colors.grey[300],
-                                  child: Icon(Icons.add),
-                                ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () async {
-                          final image = await ImagePickerWeb.getImageAsBytes();
-                          if (image != null) {
-                            setState(() {
-                              selectedImageUrl = 'data:image/png;base64,' +
-                                  base64Encode(image);
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 1.5 * spaceHeight),
-                  Text(
-                    "Oluşturan: " + menuInfo.creative!,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Oluşturma Tarihi: " +
-                        menuInfo.creationDate!.toDate().toString(),
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Son Değiştiren: " + menuInfo.lastModified!,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Son Değiştirme Tarihi: " +
-                        menuInfo.lastModifiedDate!.toDate().toString(),
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Divider(
-                    color: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('İptal', style: TextStyle(color: Colors.red)),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Implement save logic here
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Button color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                      ],
+                    ),
+                    Divider(
+                      color: Colors.white,
+                    ),
+                  ],
                 ),
-                child: Text('Kaydet'),
               ),
-            ],
-          );
-        },
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            child: Text('İptal'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          ElevatedButton(
+            child: Text('Ekle'),
+            onPressed: () async {
+              if (_productController.text.isNotEmpty &&
+                  _priceController.text.isNotEmpty &&
+                  _selectedCategory != null) {
+                String menuID = DateService().createEpoch(DateTime.now());
+                String imageUrl =
+                    await uploadImageToFirebase(selectedImageUrl!, menuID);
+                // Verileri Firestore'a kaydet
+                myMenus.addMenu(
+                    _selectedParentCategory!,
+                    _selectedCategory!,
+                    _productController.text,
+                    _contentController.text,
+                    _priceController.text,
+                    imageUrl,
+                    menuID);
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+        ],
       );
     },
   );
+}
+
+Future<String> uploadImageToFirebase(String imageUrl, String menuID) async {
+  final storage = FirebaseStorage.instance;
+
+  try {
+    // Resmi base64'ten çözüp byte verisine dönüştür
+    final decodedBytes = base64Decode(imageUrl.split(',').last);
+
+    // Firebase Storage'a yükle
+    final storageRef = storage.ref().child("menu_images/$menuID.png");
+    final uploadTask = storageRef.putData(decodedBytes);
+    await uploadTask.whenComplete(() {});
+
+    // URL'yi al
+    final downloadUrl = await storageRef.getDownloadURL();
+    return downloadUrl;
+  } catch (e) {
+    print("Resim yükleme hatası: $e");
+    return "";
+  }
 }

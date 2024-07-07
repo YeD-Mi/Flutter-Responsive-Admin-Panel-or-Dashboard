@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:admin/responsive.dart';
-
 import 'package:admin/screens/login/login_model_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -23,7 +22,7 @@ class LoginScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFAB20B), Color(0xFF52C5D7)],
+            colors: [Color(0xFF2027), Color(0xFF2C5364)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -43,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/images/enjula-logo1.png',
+                      'assets/images/enjula-logo2.png',
                       height: 200,
                     ),
                     SizedBox(height: 25),

@@ -8,3 +8,17 @@ const bgColor = Color(0xFF212332);
 const defaultPadding = 16.0;
 
 UsersModel? currentUser;
+String? currentUserID;
+
+class SizeConstants {
+  static double _width = 1080;
+  static double _height = 1920;
+
+  static double get width => _width;
+  static double get height => _height;
+
+  static void updateSizes(double newWidth, double newHeight) {
+    _width = newWidth;
+    _height = newHeight;
+  }
+}

@@ -1,3 +1,4 @@
+import 'package:admin/constants.dart';
 import 'package:admin/models/CategoriesModel.dart';
 import 'package:admin/models/MenusModel.dart';
 import 'package:admin/screens/categories/categories_service.dart';
@@ -9,11 +10,12 @@ enum MenusPageState { idle, busy, error }
 
 class MenusPageViewModel with ChangeNotifier {
   MenusPageState _state = MenusPageState.idle;
-  List<MenusModel> _Menus = [];
-  List<CategoriesModel> _Categories = [];
+  List<MenusModel> _menus = [];
+  List<CategoriesModel> _categories = [];
 
   MenusPageState get state => _state;
-  List<MenusModel> get Menus => _Menus;
+  List<MenusModel> get menus => _menus;
+  List<CategoriesModel> get categories => _categories;
 
   set state(MenusPageState state) {
     _state = state;
@@ -25,24 +27,8 @@ class MenusPageViewModel with ChangeNotifier {
     try {
       MenusService menusService = MenusService();
       QuerySnapshot snapshot = await menusService.getMenus().first;
-      _Menus =
+      _menus =
           snapshot.docs.map((doc) => MenusModel.fromFirestore(doc)).toList();
-      state = MenusPageState.idle;
-    } catch (e) {
-      state = MenusPageState.error;
-    }
-  }
-
-  int get length => _Menus.length;
-
-  MenusModel operator [](int index) => _Menus[index];
-
-  Future<void> addMenu(MenusModel newMenu) async {
-    state = MenusPageState.busy;
-    try {
-      MenusService menusService = MenusService();
-      await menusService.addMenu(newMenu);
-      _Menus.add(newMenu);
       state = MenusPageState.idle;
     } catch (e) {
       state = MenusPageState.error;
@@ -54,9 +40,40 @@ class MenusPageViewModel with ChangeNotifier {
     try {
       CategoriesService categoriesService = CategoriesService();
       QuerySnapshot snapshot = await categoriesService.getCategories().first;
-      _Categories = snapshot.docs
+      _categories = snapshot.docs
           .map((doc) => CategoriesModel.fromFirestore(doc))
           .toList();
+      state = MenusPageState.idle;
+    } catch (e) {
+      state = MenusPageState.error;
+    }
+  }
+
+  List<CategoriesModel> getFilteredCategories(String parentCategory) {
+    return _categories
+        .where((category) => category.parentCategory == parentCategory)
+        .toList();
+  }
+
+  Future<void> addMenu(String parentCategory, String category, String product,
+      String content, String price, String imgURL, String menuID) async {
+    state = MenusPageState.busy;
+    try {
+      MenusService menusService = MenusService();
+      MenusModel newMenu = MenusModel(
+          Timestamp.now(),
+          currentUser!.name! + currentUser!.lastName!,
+          category,
+          content,
+          parentCategory,
+          currentUser!.name! + " " + currentUser!.lastName!,
+          Timestamp.now(),
+          menuID,
+          imgURL,
+          price,
+          product);
+      await menusService.addMenu(newMenu);
+      _menus.add(newMenu);
       state = MenusPageState.idle;
     } catch (e) {
       state = MenusPageState.error;

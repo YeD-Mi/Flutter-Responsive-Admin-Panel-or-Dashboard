@@ -13,6 +13,26 @@ class MenusService {
   }
 
   Future<void> addMenu(MenusModel newMenu) async {
-    await _firestore.collection('Menus').add({});
+    var ref = _firestore.collection("menus");
+    DocumentReference documentRef = ref.doc(newMenu.menuID);
+
+    try {
+      await documentRef.set({
+        'creationDate': newMenu.creationDate,
+        'creative': newMenu.creative,
+        'category': newMenu.category,
+        'parentCategory': newMenu.parentCategory,
+        'lastModified': newMenu.lastModified,
+        'lastModifiedDate': newMenu.lastModifiedDate,
+        'menuID': newMenu.menuID,
+        'title': newMenu.title,
+        'contents': newMenu.contents,
+        'price': newMenu.price,
+        'image': newMenu.image,
+      });
+    } catch (e) {
+      print("Menu ekleme hatası: $e");
+      throw Exception("Menu eklenirken bir hata oluştu.");
+    }
   }
 }
