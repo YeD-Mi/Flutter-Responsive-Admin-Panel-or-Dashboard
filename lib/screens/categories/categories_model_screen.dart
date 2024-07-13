@@ -1,3 +1,4 @@
+import 'package:admin/constants.dart';
 import 'package:admin/models/CategoriesModel.dart';
 import 'package:admin/screens/categories/categories_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,16 +32,68 @@ class CategoriesPageViewModel with ChangeNotifier {
     }
   }
 
-  int get length => _categories.length;
+  Future<void> addNewCategoryAndRefresh(
+      String parentCategory, String name, String categoryID) async {
+    await addCategory(parentCategory, name, categoryID);
+    await fetchCategories(); // Menüleri yeniden çek
+    notifyListeners(); // UI'ı güncelle
+  }
 
-  CategoriesModel operator [](int index) => _categories[index];
+  List<CategoriesModel> getFilteredCategories(String parentCategory) {
+    return _categories
+        .where((category) => category.parentCategory == parentCategory)
+        .toList();
+  }
 
-  Future<void> addCategory(CategoriesModel newCategory) async {
+  Future<void> updateCategory(
+      String categoryID, String parentCategory, String name) async {
     state = CategoriesPageState.busy;
     try {
       CategoriesService categoriesService = CategoriesService();
-      await categoriesService.addCategori(newCategory);
+      CategoriesModel updatedCategory = CategoriesModel(
+          Timestamp.now(),
+          currentUser!.name! + " " + currentUser!.lastName!,
+          categoryID,
+          name,
+          currentUser!.name! + " " + currentUser!.lastName!,
+          Timestamp.now(),
+          parentCategory);
+      await categoriesService.updateCategory(updatedCategory);
+
+      state = CategoriesPageState.idle;
+      notifyListeners();
+    } catch (e) {
+      state = CategoriesPageState.error;
+    }
+  }
+
+  Future<void> addCategory(
+      String parentCategory, String categoryID, String name) async {
+    state = CategoriesPageState.busy;
+    try {
+      CategoriesService categoriesService = CategoriesService();
+      CategoriesModel newCategory = CategoriesModel(
+          Timestamp.now(),
+          currentUser!.name! + currentUser!.lastName!,
+          categoryID,
+          name,
+          currentUser!.name! + " " + currentUser!.lastName!,
+          Timestamp.now(),
+          parentCategory);
+      await categoriesService.addCategory(newCategory);
       _categories.add(newCategory);
+      state = CategoriesPageState.idle;
+    } catch (e) {
+      state = CategoriesPageState.error;
+    }
+  }
+
+  Future<void> deleteCategory(String categoryID) async {
+    state = CategoriesPageState.busy;
+    try {
+      CategoriesService categoriesService = CategoriesService();
+      await categoriesService.deleteCategory(categoryID);
+      _categories.removeWhere((category) => category.categoryID == categoryID);
       state = CategoriesPageState.idle;
     } catch (e) {
       state = CategoriesPageState.error;

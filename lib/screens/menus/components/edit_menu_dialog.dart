@@ -1,12 +1,15 @@
 import 'dart:convert';
-
+import 'package:admin/constants.dart';
 import 'package:admin/models/MenusModel.dart';
 import 'package:admin/responsive.dart';
+import 'package:admin/screens/menus/menus_model_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
-  final _categoryController = TextEditingController();
+Future<void> showDetailMenuDialog(
+    MenusModel menuInfo, BuildContext context) async {
   final _productController = TextEditingController();
   final _contentController = TextEditingController();
   final _priceController = TextEditingController();
@@ -29,6 +32,21 @@ void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
 
   String? _selectedParentCategory = menuInfo.parentCategory!;
   List<String> _parentCategories = ["Yiyecek", "İçecek"];
+
+  String? _selectedCategory;
+  List<String> _categories = [];
+
+  await Provider.of<MenusPageViewModel>(context, listen: false)
+      .fetchCategories();
+  final myMenus = context.read<MenusPageViewModel>();
+
+  if (myMenus.categories.isNotEmpty) {
+    _categories = myMenus
+        .getFilteredCategories(_selectedParentCategory)
+        .map((category) => category.name!)
+        .toList();
+    _selectedCategory = menuInfo.category;
+  }
 
   showDialog(
     context: context,
@@ -55,80 +73,124 @@ void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
               ),
             ),
             content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: spaceHeight),
-                  DropdownButtonFormField<String>(
-                    value: _selectedParentCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Üst Kategori',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+              child: Container(
+                width: SizeConstants.width * 0.3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: spaceHeight),
+                    DropdownButtonFormField<String>(
+                      value: _selectedParentCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Üst Kategori',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      items: _parentCategories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedParentCategory = newValue!;
+
+                          _categories = myMenus
+                              .getFilteredCategories(_selectedParentCategory!)
+                              .map((category) => category.name!)
+                              .toList();
+                        });
+                        _selectedCategory = _categories.first;
+                      },
+                    ),
+                    SizedBox(height: spaceHeight),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Kategori',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      items: _categories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _productController,
+                      decoration: InputDecoration(
+                        labelText: 'Ürün',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
                     ),
-                    items: _parentCategories.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedParentCategory = newValue;
-                      });
-                    },
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _categoryController,
-                    decoration: InputDecoration(
-                      labelText: 'Kategori',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _contentController,
+                      maxLines: 3, // İçerik alanının üç satıra sığması için
+                      decoration: InputDecoration(
+                        labelText: 'İçerik',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _productController,
-                    decoration: InputDecoration(
-                      labelText: 'Ürün',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _priceController,
+                      decoration: InputDecoration(
+                        labelText: 'Fiyat',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
+                      keyboardType: TextInputType.number,
                     ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _contentController,
-                    maxLines: 3, // İçerik alanının üç satıra sığması için
-                    decoration: InputDecoration(
-                      labelText: 'İçerik',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: spaceHeight),
-                  TextField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: 'Fiyat',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  SizedBox(height: spaceHeight),
-                  // Image display and picker
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
+                    SizedBox(height: spaceHeight),
+                    // Image display and picker
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final image =
+                                  await ImagePickerWeb.getImageAsBytes();
+                              if (image != null) {
+                                setState(() {
+                                  selectedImageUrl = 'data:image/png;base64,' +
+                                      base64Encode(image);
+                                });
+                              }
+                            },
+                            child: selectedImageUrl != null
+                                ? Image.network(
+                                    selectedImageUrl!,
+                                    width: SizeConstants.width * 0.2,
+                                    height: SizeConstants.width * 0.2,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: Colors.grey[300],
+                                    child: Icon(Icons.add),
+                                  ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () async {
                             final image =
                                 await ImagePickerWeb.getImageAsBytes();
                             if (image != null) {
@@ -138,58 +200,38 @@ void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
                               });
                             }
                           },
-                          child: selectedImageUrl != null
-                              ? Image.network(
-                                  selectedImageUrl!,
-                                  height: spaceHeight * 7,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  color: Colors.grey[300],
-                                  child: Icon(Icons.add),
-                                ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () async {
-                          final image = await ImagePickerWeb.getImageAsBytes();
-                          if (image != null) {
-                            setState(() {
-                              selectedImageUrl = 'data:image/png;base64,' +
-                                  base64Encode(image);
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 1.5 * spaceHeight),
-                  Text(
-                    "Oluşturan: " + menuInfo.creative!,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Oluşturma Tarihi: " +
-                        menuInfo.creationDate!.toDate().toString(),
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Son Değiştiren: " + menuInfo.lastModified!,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Son Değiştirme Tarihi: " +
-                        menuInfo.lastModifiedDate!.toDate().toString(),
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  Divider(
-                    color: Colors.white,
-                  ),
-                ],
+                      ],
+                    ),
+                    SizedBox(height: 1.5 * spaceHeight),
+                    Text(
+                      "Oluşturan: " + menuInfo.creative!,
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Oluşturma Tarihi: " +
+                          DateFormat('dd-MM-yyyy HH:mm')
+                              .format(menuInfo.creationDate!.toDate()),
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Son Değiştiren: " + menuInfo.lastModified!,
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      "Son Değiştirme Tarihi: " +
+                          DateFormat('dd-MM-yyyy HH:mm')
+                              .format(menuInfo.lastModifiedDate!.toDate()),
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    Divider(
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -201,7 +243,62 @@ void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // Implement save logic here
+                  Provider.of<MenusPageViewModel>(context, listen: false)
+                      .deleteMenu(menuInfo.menuID!)
+                      .then((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Menü başarıyla silindi'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Menü silinirken hata oluştu: $error'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text('Sil'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  myMenus
+                      .updateMenu(
+                    menuInfo.menuID!,
+                    _selectedParentCategory!,
+                    _selectedCategory!,
+                    _productController.text,
+                    _contentController.text,
+                    _priceController.text,
+                    selectedImageUrl!,
+                  )
+                      .then((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Menü başarıyla güncellendi'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text('Menü güncellenirken hata oluştu: $error'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green, // Button color
@@ -210,7 +307,7 @@ void showDetailMenuDialog(MenusModel menuInfo, BuildContext context) {
                   ),
                 ),
                 child: Text('Kaydet'),
-              ),
+              )
             ],
           );
         },

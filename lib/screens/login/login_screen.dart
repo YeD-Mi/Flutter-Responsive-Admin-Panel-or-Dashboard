@@ -22,7 +22,7 @@ class LoginScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF2027), Color(0xFF2C5364)],
+            colors: [Color(0xFFece3d0), Color(0xFF2C5364)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -31,6 +31,7 @@ class LoginScreen extends StatelessWidget {
           child: SingleChildScrollView(
             padding: EdgeInsets.all(20),
             child: Card(
+              color: Color(0xFF151616),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
@@ -42,13 +43,13 @@ class LoginScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/images/enjula-logo2.png',
+                      'assets/images/enjula-logo1.png',
                       height: 200,
                     ),
                     SizedBox(height: 25),
                     Text(
-                      'Web Panel',
-                      style: TextStyle(fontSize: 15, color: Colors.white),
+                      'Web Panel Giriş',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     SizedBox(height: 25),
                     TextField(

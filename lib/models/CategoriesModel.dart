@@ -6,8 +6,11 @@ class CategoriesModel {
   String? categoryID;
   String? name;
   String? parentCategory;
+  String? lastModified;
+  Timestamp? lastModifiedDate;
 
-  CategoriesModel(this.creationDate, this.creative, this.categoryID, this.name);
+  CategoriesModel(this.creationDate, this.creative, this.categoryID, this.name,
+      this.lastModified, this.lastModifiedDate, this.parentCategory);
 
   CategoriesModel.fromJson(Map<String, dynamic> json) {
     creationDate = json["creationDate"] as Timestamp?;
@@ -15,6 +18,8 @@ class CategoriesModel {
     categoryID = json["categoryID"];
     name = json["name"];
     parentCategory = json["parentCategory"];
+    lastModified = json["lastModified"];
+    lastModifiedDate = json["lastModifiedDate"];
   }
 
   Map<String, dynamic> toJson() {
@@ -25,6 +30,8 @@ class CategoriesModel {
     data["categoryID"] = categoryID;
     data["name"] = name;
     data["parentCategory"] = parentCategory;
+    data["lastModified"] = lastModified;
+    data["lastModifiedDate"] = lastModifiedDate;
     return data;
   }
 

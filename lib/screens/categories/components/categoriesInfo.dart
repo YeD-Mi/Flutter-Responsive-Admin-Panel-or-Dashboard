@@ -1,8 +1,9 @@
 import 'package:admin/models/CategoriesModel.dart';
-import 'package:admin/responsive.dart';
 import 'package:admin/screens/categories/categories_model_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:admin/screens/categories/components/add_category_dialog.dart';
+import 'package:admin/screens/categories/components/edit_category_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:admin/responsive.dart';
 import 'package:provider/provider.dart';
 import '../../../constants.dart';
 
@@ -27,14 +28,13 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
   @override
   Widget build(BuildContext context) {
     final myCategories = Provider.of<CategoriesPageViewModel>(context);
-
     return FutureBuilder(
       future: _fetchCategoriesFuture,
       builder: (context, snapshot) {
         if (myCategories.state == CategoriesPageState.busy) {
           return Center(child: CircularProgressIndicator());
         } else if (myCategories.state == CategoriesPageState.error) {
-          return Center(child: Text('Error loading categories'));
+          return Center(child: Text('Error loading Categories'));
         } else {
           return Container(
             padding: EdgeInsets.all(defaultPadding),
@@ -43,15 +43,11 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
               borderRadius: const BorderRadius.all(Radius.circular(10)),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      "Kategoriler",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
                     ElevatedButton.icon(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.symmetric(
@@ -61,7 +57,7 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                         ),
                       ),
                       onPressed: () {
-                        _showAddCategoryDialog(context);
+                        showAddCategoryDialog(context);
                       },
                       icon: Icon(Icons.add),
                       label: Text("Yeni Kategori"),
@@ -72,28 +68,27 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                   width: double.infinity,
                   child: DataTable(
                     columnSpacing: defaultPadding,
-                    // minWidth: 600,
                     columns: [
                       DataColumn(
-                        label: Text("Üst Kategori"),
+                        label: Text("Kategori Adı"),
                       ),
                       DataColumn(
-                        label: Text("Başlık"),
+                        label: Text("Üst Kategori"),
                       ),
                       DataColumn(
                         label: Text("Oluşturan"),
                       ),
                       DataColumn(
-                        label: Text("Oluşturma Tarihi"),
+                        label: Text(" "),
                       ),
                     ],
                     rows: List.generate(
                       myCategories.categories.length,
-                      (index) =>
-                          categoryInfoDataRow(myCategories.categories[index]),
+                      (index) => categoryInfoDataRow(
+                          myCategories.categories[index], context),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           );
@@ -103,68 +98,18 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
   }
 }
 
-void _showAddCategoryDialog(BuildContext context) {
-  final _categoryIDController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _creativeController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Yeni Kategori'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _categoryIDController,
-                decoration: InputDecoration(labelText: 'Başlık'),
-              ),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'QR URL'),
-              ),
-              TextField(
-                controller: _creativeController,
-                decoration: InputDecoration(labelText: 'Oluşturan'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newCategory = CategoriesModel(
-                  Timestamp.fromDate(DateTime.now()),
-                  _creativeController.text,
-                  _categoryIDController.text,
-                  _nameController.text);
-              Provider.of<CategoriesPageViewModel>(context, listen: false)
-                  .addCategory(newCategory);
-              Navigator.of(context).pop();
-            },
-            child: Text('Ekle'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-DataRow categoryInfoDataRow(CategoriesModel categoryInfo) {
+DataRow categoryInfoDataRow(
+    CategoriesModel categoryInfo, BuildContext context) {
   return DataRow(
     cells: [
-      DataCell(Text(categoryInfo.parentCategory!)),
       DataCell(Text(categoryInfo.name!)),
+      DataCell(Text(categoryInfo.parentCategory!)),
       DataCell(Text(categoryInfo.creative!)),
-      DataCell(Text(categoryInfo.creationDate!.toDate().toString())),
+      DataCell(ElevatedButton(
+          onPressed: () {
+            showDetailCategoryDialog(categoryInfo, context);
+          },
+          child: Text("İşlem")))
     ],
   );
 }
