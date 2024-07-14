@@ -1,9 +1,8 @@
 import 'package:admin/responsive.dart';
+import 'package:admin/screens/tables/components/tablesInfo.dart';
 import 'package:flutter/material.dart';
-
 import '../../constants.dart';
 import 'components/header.dart';
-import 'components/tablesInfo.dart';
 
 class TablesScreen extends StatelessWidget {
   @override
@@ -24,7 +23,7 @@ class TablesScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SizedBox(height: defaultPadding),
-                      TablesInfo(),
+                      Tablesinfo(),
                       if (Responsive.isMobile(context))
                         SizedBox(height: defaultPadding)
                     ],
@@ -32,7 +31,7 @@ class TablesScreen extends StatelessWidget {
                 ),
                 if (!Responsive.isMobile(context))
                   SizedBox(width: defaultPadding),
-                // On Mobile means if the screen is less than 850 we don't want to show it
+                // Ekran boyutuna göre ek bileşenler eklenebilir
               ],
             )
           ],

@@ -1,19 +1,20 @@
 import 'package:admin/models/TablesModel.dart';
-import 'package:admin/responsive.dart';
+import 'package:admin/screens/tables/components/add_tables_dialog.dart';
+import 'package:admin/screens/tables/components/edit_tables_dialog.dart';
 import 'package:admin/screens/tables/tables_model_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:admin/responsive.dart';
 import 'package:provider/provider.dart';
 import '../../../constants.dart';
 
-class TablesInfo extends StatefulWidget {
-  const TablesInfo({Key? key}) : super(key: key);
+class Tablesinfo extends StatefulWidget {
+  const Tablesinfo({Key? key}) : super(key: key);
 
   @override
   _TablesInfoState createState() => _TablesInfoState();
 }
 
-class _TablesInfoState extends State<TablesInfo> {
+class _TablesInfoState extends State<Tablesinfo> {
   late Future<void> _fetchTablesFuture;
 
   @override
@@ -26,14 +27,13 @@ class _TablesInfoState extends State<TablesInfo> {
   @override
   Widget build(BuildContext context) {
     final myTables = Provider.of<TablesPageViewModel>(context);
-
     return FutureBuilder(
       future: _fetchTablesFuture,
       builder: (context, snapshot) {
         if (myTables.state == TablesPageState.busy) {
           return Center(child: CircularProgressIndicator());
         } else if (myTables.state == TablesPageState.error) {
-          return Center(child: Text('Error loading tables'));
+          return Center(child: Text('Error loading Tables'));
         } else {
           return Container(
             padding: EdgeInsets.all(defaultPadding),
@@ -42,15 +42,11 @@ class _TablesInfoState extends State<TablesInfo> {
               borderRadius: const BorderRadius.all(Radius.circular(10)),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      "Masalar",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
                     ElevatedButton.icon(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.symmetric(
@@ -60,7 +56,7 @@ class _TablesInfoState extends State<TablesInfo> {
                         ),
                       ),
                       onPressed: () {
-                        _showAddTableDialog(context);
+                        showAddTableDialog(context);
                       },
                       icon: Icon(Icons.add),
                       label: Text("Yeni Masa"),
@@ -71,10 +67,9 @@ class _TablesInfoState extends State<TablesInfo> {
                   width: double.infinity,
                   child: DataTable(
                     columnSpacing: defaultPadding,
-                    // minWidth: 600,
                     columns: [
                       DataColumn(
-                        label: Text("Masa No"),
+                        label: Text("Masa Adı"),
                       ),
                       DataColumn(
                         label: Text("QR"),
@@ -83,15 +78,16 @@ class _TablesInfoState extends State<TablesInfo> {
                         label: Text("Oluşturan"),
                       ),
                       DataColumn(
-                        label: Text("Oluşturma Tarihi"),
+                        label: Text(" "),
                       ),
                     ],
                     rows: List.generate(
                       myTables.tables.length,
-                      (index) => tableInfoDataRow(myTables.tables[index]),
+                      (index) =>
+                          tableInfoDataRow(myTables.tables[index], context),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           );
@@ -101,75 +97,50 @@ class _TablesInfoState extends State<TablesInfo> {
   }
 }
 
-void _showAddTableDialog(BuildContext context) {
-  final _tableIDController = TextEditingController();
-  final _qrURLController = TextEditingController();
-  final _creativeController = TextEditingController();
-  final _titleController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Yeni Masa Ekle'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _tableIDController,
-                decoration: InputDecoration(labelText: 'Masa No'),
-              ),
-              TextField(
-                controller: _qrURLController,
-                decoration: InputDecoration(labelText: 'QR URL'),
-              ),
-              TextField(
-                controller: _creativeController,
-                decoration: InputDecoration(labelText: 'Oluşturan'),
-              ),
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: 'Masa Adı'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newTable = TablesModel(
-                Timestamp.fromDate(DateTime.now()),
-                _creativeController.text,
-                _tableIDController.text,
-                _qrURLController.text,
-                _titleController.text,
-              );
-              Provider.of<TablesPageViewModel>(context, listen: false)
-                  .addTable(newTable);
-              Navigator.of(context).pop();
-            },
-            child: Text('Ekle'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-DataRow tableInfoDataRow(TablesModel tableInfo) {
+DataRow tableInfoDataRow(TablesModel tableInfo, BuildContext context) {
   return DataRow(
     cells: [
-      DataCell(Text(tableInfo.tableID!)),
-      DataCell(Text(tableInfo.qrURL!)),
+      DataCell(Text(tableInfo.title!)),
+      DataCell(InkWell(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Container(
+                    width: SizeConstants.width * 0.5,
+                    height: SizeConstants.height * 0.5,
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Image.network(
+                            tableInfo.qrURL!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Kapat'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          child: Icon(Icons.image))),
       DataCell(Text(tableInfo.creative!)),
-      DataCell(Text(tableInfo.creationDate!.toDate().toString())),
+      DataCell(ElevatedButton(
+          onPressed: () {
+            showDetailTableDialog(tableInfo, context);
+          },
+          child: Text("İşlem")))
     ],
   );
 }

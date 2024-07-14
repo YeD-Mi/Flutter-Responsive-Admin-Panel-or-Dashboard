@@ -6,9 +6,11 @@ class TablesModel {
   String? tableID;
   String? qrURL;
   String? title;
+  String? lastModified;
+  Timestamp? lastModifiedDate;
 
-  TablesModel(
-      this.creationDate, this.creative, this.tableID, this.qrURL, this.title);
+  TablesModel(this.creationDate, this.creative, this.tableID, this.qrURL,
+      this.title, this.lastModified, this.lastModifiedDate);
 
   TablesModel.fromJson(Map<String, dynamic> json) {
     creationDate = json["creationDate"] as Timestamp?;
@@ -16,6 +18,8 @@ class TablesModel {
     tableID = json["tableID"];
     qrURL = json["qrURL"];
     title = json["title"];
+    lastModified = json["lastModified"];
+    lastModifiedDate = json["lastModifiedDate"];
   }
 
   Map<String, dynamic> toJson() {
@@ -26,6 +30,8 @@ class TablesModel {
     data["deskID"] = tableID;
     data["qrURL"] = qrURL;
     data["title"] = title;
+    data["lastModified"] = lastModified;
+    data["lastModifiedDate"] = lastModifiedDate;
     return data;
   }
 

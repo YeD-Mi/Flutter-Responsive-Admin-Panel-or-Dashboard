@@ -34,9 +34,9 @@ class CategoriesPageViewModel with ChangeNotifier {
 
   Future<void> addNewCategoryAndRefresh(
       String parentCategory, String name, String categoryID) async {
-    await addCategory(parentCategory, name, categoryID);
-    await fetchCategories(); // Menüleri yeniden çek
-    notifyListeners(); // UI'ı güncelle
+    await addCategory(parentCategory, categoryID, name);
+    await fetchCategories();
+    notifyListeners();
   }
 
   List<CategoriesModel> getFilteredCategories(String parentCategory) {
@@ -61,6 +61,7 @@ class CategoriesPageViewModel with ChangeNotifier {
       await categoriesService.updateCategory(updatedCategory);
 
       state = CategoriesPageState.idle;
+      await fetchCategories();
       notifyListeners();
     } catch (e) {
       state = CategoriesPageState.error;

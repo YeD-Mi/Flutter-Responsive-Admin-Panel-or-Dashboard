@@ -1,15 +1,15 @@
 import 'package:admin/constants.dart';
-import 'package:admin/models/CategoriesModel.dart';
+import 'package:admin/models/TablesModel.dart';
 import 'package:admin/responsive.dart';
-import 'package:admin/screens/categories/categories_model_screen.dart';
+import 'package:admin/screens/tables/tables_model_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-Future<void> showDetailCategoryDialog(
-    CategoriesModel categoryInfo, BuildContext context) async {
-  final _nameController = TextEditingController();
-  _nameController.text = categoryInfo.name!;
+Future<void> showDetailTableDialog(
+    TablesModel tableInfo, BuildContext context) async {
+  final _titleController = TextEditingController();
+  _titleController.text = tableInfo.title!;
 
   double spaceHeight;
   if (Responsive.isDesktop(context)) {
@@ -20,10 +20,7 @@ Future<void> showDetailCategoryDialog(
     spaceHeight = 10.0;
   }
 
-  String? _selectedParentCategory = categoryInfo.parentCategory!;
-  List<String> _parentCategories = ["Yiyecek", "İçecek"];
-
-  final myCategories = context.read<CategoriesPageViewModel>();
+  final myTables = context.read<TablesPageViewModel>();
 
   showDialog(
     context: context,
@@ -39,7 +36,7 @@ Future<void> showDetailCategoryDialog(
             title: Center(
               child: Column(
                 children: [
-                  Text('Kategori Düzenle',
+                  Text('Masa Düzenle',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                   SizedBox(height: spaceHeight),
@@ -57,23 +54,10 @@ Future<void> showDetailCategoryDialog(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(height: spaceHeight),
-                    DropdownButton<String>(
-                      value: _selectedParentCategory,
-                      disabledHint: Text(_selectedParentCategory),
-                      isExpanded: true,
-                      items: _parentCategories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: null,
-                    ),
-                    SizedBox(height: spaceHeight),
                     TextField(
-                      controller: _nameController,
+                      controller: _titleController,
                       decoration: InputDecoration(
-                        labelText: 'Kategori Adı',
+                        labelText: 'Masa Adı',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -81,26 +65,26 @@ Future<void> showDetailCategoryDialog(
                     ),
                     SizedBox(height: 1.5 * spaceHeight),
                     Text(
-                      "Oluşturan: " + categoryInfo.creative!,
+                      "Oluşturan: " + tableInfo.creative!,
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     SizedBox(height: 5),
                     Text(
                       "Oluşturma Tarihi: " +
                           DateFormat('dd-MM-yyyy HH:mm')
-                              .format(categoryInfo.creationDate!.toDate()),
+                              .format(tableInfo.creationDate!.toDate()),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     SizedBox(height: 5),
                     Text(
-                      "Son Değiştiren: " + categoryInfo.lastModified!,
+                      "Son Değiştiren: " + tableInfo.lastModified!,
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     SizedBox(height: 5),
                     Text(
                       "Son Değiştirme Tarihi: " +
                           DateFormat('dd-MM-yyyy HH:mm')
-                              .format(categoryInfo.lastModifiedDate!.toDate()),
+                              .format(tableInfo.lastModifiedDate!.toDate()),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     Divider(
@@ -119,12 +103,12 @@ Future<void> showDetailCategoryDialog(
               ),
               ElevatedButton(
                 onPressed: () {
-                  Provider.of<CategoriesPageViewModel>(context, listen: false)
-                      .deleteCategory(categoryInfo.categoryID!)
+                  Provider.of<TablesPageViewModel>(context, listen: false)
+                      .deleteTable(tableInfo.tableID!)
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Kategori başarıyla silindi'),
+                        content: Text('Masa başarıyla silindi'),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -132,8 +116,7 @@ Future<void> showDetailCategoryDialog(
                   }).catchError((error) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            Text('Kategori silinirken hata oluştu: $error'),
+                        content: Text('Masa silinirken hata oluştu: $error'),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -149,9 +132,9 @@ Future<void> showDetailCategoryDialog(
               ),
               ElevatedButton(
                 onPressed: () {
-                  myCategories
-                      .updateCategory(categoryInfo.categoryID!,
-                          _selectedParentCategory, _nameController.text)
+                  myTables
+                      .updateTable(tableInfo.tableID!, "_selectedParentTable",
+                          _titleController.text)
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

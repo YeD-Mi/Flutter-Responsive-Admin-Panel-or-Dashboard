@@ -1,3 +1,4 @@
+import 'package:admin/constants.dart';
 import 'package:admin/models/TablesModel.dart';
 import 'package:admin/screens/tables/tables_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,16 +31,65 @@ class TablesPageViewModel with ChangeNotifier {
     }
   }
 
-  int get length => _tables.length;
+  Future<void> addNewTableAndRefresh(
+      String name, String tableID, String qrURL) async {
+    print("Birazdan veri yazacağım - addNewTableAndRefresh");
+    await addTable(tableID, name, qrURL);
+    await fetchTables();
+    notifyListeners();
+  }
 
-  TablesModel operator [](int index) => _tables[index];
-
-  Future<void> addTable(TablesModel newTable) async {
+  Future<void> updateTable(
+      String tableID, String parentTable, String name) async {
     state = TablesPageState.busy;
     try {
       TablesService tablesService = TablesService();
+      TablesModel updatedTable = TablesModel(
+        Timestamp.now(),
+        currentUser!.name! + " " + currentUser!.lastName!,
+        tableID,
+        tableID, //qr gelecek
+        name,
+        currentUser!.name! + " " + currentUser!.lastName!,
+        Timestamp.now(),
+      );
+      await tablesService.updateTable(updatedTable);
+
+      state = TablesPageState.idle;
+      await fetchTables();
+      notifyListeners();
+    } catch (e) {
+      state = TablesPageState.error;
+    }
+  }
+
+  Future<void> addTable(String tableID, String name, String qrURL) async {
+    state = TablesPageState.busy;
+    try {
+      TablesService tablesService = TablesService();
+      TablesModel newTable = TablesModel(
+        Timestamp.now(),
+        currentUser!.name! + " " + currentUser!.lastName!,
+        tableID,
+        qrURL,
+        name,
+        currentUser!.name! + " " + currentUser!.lastName!,
+        Timestamp.now(),
+      );
       await tablesService.addTable(newTable);
       _tables.add(newTable);
+      state = TablesPageState.idle;
+    } catch (e) {
+      state = TablesPageState.error;
+    }
+  }
+
+  Future<void> deleteTable(String tableID) async {
+    state = TablesPageState.busy;
+    try {
+      TablesService tablesService = TablesService();
+      await tablesService.deleteTable(tableID);
+      _tables.removeWhere((table) => table.tableID == tableID);
       state = TablesPageState.idle;
     } catch (e) {
       state = TablesPageState.error;
