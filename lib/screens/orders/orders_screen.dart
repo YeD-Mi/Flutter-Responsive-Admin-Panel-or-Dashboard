@@ -1,9 +1,8 @@
 import 'package:admin/responsive.dart';
+import 'package:admin/screens/orders/components/ordersInfo.dart';
 import 'package:flutter/material.dart';
-
 import '../../constants.dart';
 import 'components/header.dart';
-import 'components/recent_files.dart';
 
 class OrdersScreen extends StatelessWidget {
   @override
@@ -24,7 +23,7 @@ class OrdersScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SizedBox(height: defaultPadding),
-                      RecentFiles(),
+                      Ordersinfo(),
                       if (Responsive.isMobile(context))
                         SizedBox(height: defaultPadding)
                     ],
@@ -32,7 +31,7 @@ class OrdersScreen extends StatelessWidget {
                 ),
                 if (!Responsive.isMobile(context))
                   SizedBox(width: defaultPadding),
-                // On Mobile means if the screen is less than 850 we don't want to show it
+                // Ekran boyutuna göre ek bileşenler eklenebilir
               ],
             )
           ],
