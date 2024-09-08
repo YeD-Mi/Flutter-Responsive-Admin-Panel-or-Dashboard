@@ -11,11 +11,15 @@ import 'package:provider/provider.dart';
 Future<void> showDetailMenuDialog(
     MenusModel menuInfo, BuildContext context) async {
   final _productController = TextEditingController();
+  final _productController_en = TextEditingController();
   final _contentController = TextEditingController();
+  final _contentController_en = TextEditingController();
   final _priceController = TextEditingController();
 
   _productController.text = menuInfo.title!;
+  _productController_en.text = menuInfo.title_en!;
   _contentController.text = menuInfo.contents!;
+  _contentController_en.text = menuInfo.contents_en!;
   _priceController.text = menuInfo.price!;
 
   double spaceHeight;
@@ -32,6 +36,8 @@ Future<void> showDetailMenuDialog(
 
   String? _selectedParentCategory = menuInfo.parentCategory!;
   List<String> _parentCategories = ["Yiyecek", "İçecek"];
+
+  List<Map<String, String>> priceOptions = [{}]; // Başlangıçta bir boş alan
 
   String? _selectedCategory;
   List<String> _categories = [];
@@ -139,10 +145,31 @@ Future<void> showDetailMenuDialog(
                     ),
                     SizedBox(height: spaceHeight),
                     TextField(
+                      controller: _productController_en,
+                      decoration: InputDecoration(
+                        labelText: 'Ürün (English)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
                       controller: _contentController,
                       maxLines: 3, // İçerik alanının üç satıra sığması için
                       decoration: InputDecoration(
                         labelText: 'İçerik',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _contentController_en,
+                      maxLines: 3, // İçerik alanının üç satıra sığması için
+                      decoration: InputDecoration(
+                        labelText: 'İçerik (English)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -274,14 +301,18 @@ Future<void> showDetailMenuDialog(
                 onPressed: () {
                   myMenus
                       .updateMenu(
-                    menuInfo.menuID!,
-                    _selectedParentCategory!,
-                    _selectedCategory!,
-                    _productController.text,
-                    _contentController.text,
-                    _priceController.text,
-                    selectedImageUrl!,
-                  )
+                          menuInfo.menuID!,
+                          _selectedParentCategory!,
+                          _selectedParentCategory!,
+                          _selectedCategory!,
+                          _selectedCategory!,
+                          _productController.text,
+                          _productController_en.text,
+                          _contentController.text,
+                          _contentController_en.text,
+                          _priceController.text,
+                          selectedImageUrl!,
+                          priceOptions)
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

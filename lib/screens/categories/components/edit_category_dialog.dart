@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 Future<void> showDetailCategoryDialog(
     CategoriesModel categoryInfo, BuildContext context) async {
   final _nameController = TextEditingController();
+  final _nameController_en = TextEditingController();
   _nameController.text = categoryInfo.name!;
+  _nameController_en.text = categoryInfo.name_en!;
 
   double spaceHeight;
   if (Responsive.isDesktop(context)) {
@@ -74,6 +76,16 @@ Future<void> showDetailCategoryDialog(
                       controller: _nameController,
                       decoration: InputDecoration(
                         labelText: 'Kategori Adı',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Kategori Adı (English)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -150,8 +162,11 @@ Future<void> showDetailCategoryDialog(
               ElevatedButton(
                 onPressed: () {
                   myCategories
-                      .updateCategory(categoryInfo.categoryID!,
-                          _selectedParentCategory, _nameController.text)
+                      .updateCategory(
+                          categoryInfo.categoryID!,
+                          _selectedParentCategory,
+                          _nameController.text,
+                          _nameController_en.text)
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

@@ -33,7 +33,6 @@ class TablesPageViewModel with ChangeNotifier {
 
   Future<void> addNewTableAndRefresh(
       String name, String tableID, String qrURL) async {
-    print("Birazdan veri yazacağım - addNewTableAndRefresh");
     await addTable(tableID, name, qrURL);
     await fetchTables();
     notifyListeners();

@@ -1,3 +1,4 @@
+import 'package:admin/constants.dart';
 import 'package:admin/models/CategoriesModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -20,11 +21,12 @@ class CategoriesService {
     try {
       await documentRef.set({
         'creationDate': newCategory.creationDate,
-        'creative': newCategory.creative,
-        'lastModified': newCategory.lastModified,
+        'creative': currentUser!.name! + " " + currentUser!.lastName!,
+        'lastModified': currentUser!.name! + " " + currentUser!.lastName!,
         'lastModifiedDate': newCategory.lastModifiedDate,
         'categoryID': newCategory.categoryID,
         'name': newCategory.name,
+        'name_en': newCategory.name_en,
         'parentCategory': newCategory.parentCategory
       });
     } catch (e) {
@@ -43,12 +45,11 @@ class CategoriesService {
 
     try {
       await documentRef.update({
-        // 'creationDate': updatedCategory.creationDate,
-        // 'creative': updatedCategory.creative,
         'lastModified': updatedCategory.lastModified,
         'lastModifiedDate': updatedCategory.lastModifiedDate,
         'categoryID': updatedCategory.categoryID,
         'name': updatedCategory.name,
+        'name_en': updatedCategory.name_en,
         'parentCategory': updatedCategory.parentCategory
       });
     } catch (e) {

@@ -10,7 +10,9 @@ import 'package:provider/provider.dart';
 
 void showAddMenuDialog(BuildContext context) async {
   final _productController = TextEditingController();
+  final _productController_en = TextEditingController();
   final _contentController = TextEditingController();
+  final _contentController_en = TextEditingController();
   final _priceController = TextEditingController();
 
   double spaceHeight;
@@ -29,6 +31,9 @@ void showAddMenuDialog(BuildContext context) async {
 
   List<String> _categories = [];
   String? _selectedCategory;
+  String? _selectedCategory_en;
+
+  List<Map<String, String>> priceOptions = [{}]; // Başlangıçta bir boş alan
 
   await Provider.of<MenusPageViewModel>(context, listen: false)
       .fetchCategories();
@@ -40,6 +45,7 @@ void showAddMenuDialog(BuildContext context) async {
         .map((category) => category.name!)
         .toList();
     _selectedCategory = _categories.first;
+    _selectedCategory_en = _categories.first;
   }
 
   showDialog(
@@ -69,96 +75,211 @@ void showAddMenuDialog(BuildContext context) async {
           builder: (context, setState) {
             return SingleChildScrollView(
               child: Container(
-                width: SizeConstants.width * 0.3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: spaceHeight),
-                    DropdownButtonFormField<String>(
-                      value: _selectedParentCategory,
-                      decoration: InputDecoration(
-                        labelText: 'Üst Kategori',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
+                  width: SizeConstants.width * 0.3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: spaceHeight),
+                      DropdownButtonFormField<String>(
+                        value: _selectedParentCategory,
+                        decoration: InputDecoration(
+                          labelText: 'Üst Kategori',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        items: _parentCategories.map((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedParentCategory = newValue!;
+                            _categories = myMenus
+                                .getFilteredCategories(_selectedParentCategory!)
+                                .map((category) => category.name!)
+                                .toList();
+                          });
+                          _selectedCategory =
+                              _categories.isNotEmpty ? _categories.first : null;
+                        },
+                      ),
+                      SizedBox(height: spaceHeight),
+                      DropdownButtonFormField<String>(
+                        value: _categories.isNotEmpty ? _categories[0] : null,
+                        decoration: InputDecoration(
+                          labelText: 'Kategori',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        items: _categories.map((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedCategory = newValue;
+                          });
+                        },
+                      ),
+                      SizedBox(height: spaceHeight),
+                      TextField(
+                        controller: _productController,
+                        decoration: InputDecoration(
+                          labelText: 'Ürün',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
                       ),
-                      items: _parentCategories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
+                      SizedBox(height: spaceHeight),
+                      TextField(
+                        controller: _productController_en,
+                        decoration: InputDecoration(
+                          labelText: 'Ürün (English)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: spaceHeight),
+                      TextField(
+                        controller: _contentController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: 'İçerik',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: spaceHeight),
+                      TextField(
+                        controller: _contentController_en,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: 'İçerik (English)',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: spaceHeight),
+                      TextField(
+                        controller: _priceController,
+                        decoration: InputDecoration(
+                          labelText: 'Genel Fiyat',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      SizedBox(height: spaceHeight),
+                      Row(
+                        children: [
+                          Icon(Icons.category, color: Colors.blue),
+                          SizedBox(width: 8.0),
+                          Text(
+                            "Alt Kırılımlar:",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Spacer(),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                priceOptions.add(
+                                    {"type": "", "type_en": "", "price": ""});
+                              });
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Uyarı'),
+                                    content:
+                                        Text(priceOptions.length.toString()),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: Text('Tamam'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: Icon(Icons.add),
+                            label: Text("Yeni Kırılım"),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blue, // Text color
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: spaceHeight / 2),
+                      // Price Options Fields
+                      ...priceOptions.map((option) {
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Açıklama',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  option['type'] = value;
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Açıklama (English)',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  option['type_en'] = value;
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  labelText: 'Artı Fiyat',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  option['price'] = value;
+                                },
+                              ),
+                            ),
+                          ],
                         );
                       }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedParentCategory = newValue!;
-
-                          _categories = myMenus
-                              .getFilteredCategories(_selectedParentCategory!)
-                              .map((category) => category.name!)
-                              .toList();
-                        });
-                        _selectedCategory = _categories.first;
-                      },
-                    ),
-                    SizedBox(height: spaceHeight),
-                    DropdownButtonFormField<String>(
-                      value: _categories.isNotEmpty ? _categories[0] : null,
-                      decoration: InputDecoration(
-                        labelText: 'Kategori',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      items: _categories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCategory = newValue;
-                        });
-                      },
-                    ),
-                    SizedBox(height: spaceHeight),
-                    TextField(
-                      controller: _productController,
-                      decoration: InputDecoration(
-                        labelText: 'Ürün',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: spaceHeight),
-                    TextField(
-                      controller: _contentController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'İçerik',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: spaceHeight),
-                    TextField(
-                      controller: _priceController,
-                      decoration: InputDecoration(
-                        labelText: 'Fiyat',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                    SizedBox(height: spaceHeight),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
+                      SizedBox(height: spaceHeight),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
                               onTap: () async {
                                 final image =
                                     await ImagePickerWeb.getImageAsBytes();
@@ -175,29 +296,31 @@ void showAddMenuDialog(BuildContext context) async {
                                 width: SizeConstants.width * 0.2,
                                 height: SizeConstants.width * 0.2,
                                 fit: BoxFit.cover,
-                              )),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add_a_photo),
-                          onPressed: () async {
-                            final image =
-                                await ImagePickerWeb.getImageAsBytes();
-                            if (image != null) {
-                              setState(() {
-                                selectedImageUrl = 'data:image/png;base64,' +
-                                    base64Encode(image);
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    Divider(
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add_a_photo),
+                            onPressed: () async {
+                              final image =
+                                  await ImagePickerWeb.getImageAsBytes();
+                              if (image != null) {
+                                setState(() {
+                                  selectedImageUrl = 'data:image/png;base64,' +
+                                      base64Encode(image);
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: spaceHeight),
+                      Divider(
+                        color: Colors.white,
+                      ),
+                      SizedBox(height: spaceHeight),
+                    ],
+                  )),
             );
           },
         ),
@@ -243,18 +366,21 @@ void showAddMenuDialog(BuildContext context) async {
                   imageUrl =
                       await uploadImageToFirebase(selectedImageUrl!, menuID);
                 }
-
                 // Verileri Firestore'a kaydet
                 myMenus
                     .addNewMenuAndRefresh(
-                  _selectedParentCategory!,
-                  _selectedCategory!,
-                  _productController.text,
-                  _contentController.text,
-                  _priceController.text,
-                  imageUrl,
-                  menuID,
-                )
+                        _selectedParentCategory!,
+                        _selectedParentCategory!,
+                        _selectedCategory!,
+                        _selectedCategory_en!,
+                        _productController.text,
+                        _productController_en.text,
+                        _contentController.text,
+                        _contentController_en.text,
+                        _priceController.text,
+                        imageUrl,
+                        menuID,
+                        priceOptions)
                     .then((_) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -262,6 +388,7 @@ void showAddMenuDialog(BuildContext context) async {
                       backgroundColor: Colors.green,
                     ),
                   );
+
                   Navigator.of(context).pop();
                 }).catchError((error) {
                   ScaffoldMessenger.of(context).showSnackBar(

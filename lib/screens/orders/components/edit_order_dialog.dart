@@ -12,7 +12,7 @@ Future<void> showDetailOrderDialog(
   final _contentController = TextEditingController();
   final _priceController = TextEditingController();
 
-  _productController.text = orderInfo.status!;
+  _productController.text = orderInfo.orderId!;
   _contentController.text = orderInfo.status!;
   _priceController.text = orderInfo.status!;
 
@@ -78,7 +78,6 @@ Future<void> showDetailOrderDialog(
                         setState(() {});
                       },
                     ),
-
                     SizedBox(height: spaceHeight),
                     TextField(
                       controller: _productController,
@@ -112,7 +111,7 @@ Future<void> showDetailOrderDialog(
                       keyboardType: TextInputType.number,
                     ),
                     SizedBox(height: spaceHeight),
-                    // Image display and picker
+                    // Oluşturan ve Oluşturma Tarihi
                     SizedBox(height: 1.5 * spaceHeight),
                     Text(
                       "Oluşturan: " + orderInfo.status!,
@@ -126,17 +125,28 @@ Future<void> showDetailOrderDialog(
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     SizedBox(height: 5),
-                    Text(
-                      "Son Değiştiren: " + orderInfo.lastModified!,
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      "Son Değiştirme Tarihi: " +
-                          DateFormat('dd-MM-yyyy HH:mm')
-                              .format(orderInfo.lastModifiedDate!.toDate()),
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
+
+                    // Son Değiştiren bilgisi dolu ise göster
+                    if (orderInfo.lastModified != null &&
+                        orderInfo.lastModified!.isNotEmpty) ...[
+                      Text(
+                        "Son Değiştiren: " + orderInfo.lastModified!,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(height: 5),
+                    ],
+
+                    // Son Değiştirme Tarihi dolu ise göster
+                    if (orderInfo.lastModifiedDate != null) ...[
+                      Text(
+                        "Son Değiştirme Tarihi: " +
+                            DateFormat('dd-MM-yyyy HH:mm')
+                                .format(orderInfo.lastModifiedDate!.toDate()),
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      SizedBox(height: 5),
+                    ],
+
                     Divider(
                       color: Colors.white,
                     ),

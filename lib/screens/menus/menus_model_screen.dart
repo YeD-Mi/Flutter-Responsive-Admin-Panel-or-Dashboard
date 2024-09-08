@@ -37,14 +37,30 @@ class MenusPageViewModel with ChangeNotifier {
 
   Future<void> addNewMenuAndRefresh(
       String parentCategory,
+      String parentCategory_en,
       String category,
+      String category_en,
       String product,
+      String product_en,
       String content,
+      String content_en,
       String price,
       String imageUrl,
-      String menuID) async {
+      String menuID,
+      List<Map<String, String>> priceOptions) async {
     await addMenu(
-        parentCategory, category, product, content, price, imageUrl, menuID);
+        parentCategory,
+        parentCategory_en,
+        category,
+        category_en,
+        product,
+        product_en,
+        content,
+        content_en,
+        price,
+        imageUrl,
+        menuID,
+        priceOptions);
     await fetchMenus(); // Menüleri yeniden çek
     notifyListeners(); // UI'ı güncelle
   }
@@ -69,24 +85,43 @@ class MenusPageViewModel with ChangeNotifier {
         .toList();
   }
 
-  Future<void> updateMenu(String menuID, String parentCategory, String category,
-      String product, String content, String price, String imgURL) async {
+  Future<void> updateMenu(
+      String menuID,
+      String parentCategory,
+      String parentCategory_en,
+      String category,
+      String category_en,
+      String product,
+      String product_en,
+      String content,
+      String content_en,
+      String price,
+      String imgURL,
+      List<Map<String, String>> priceOptions) async {
     state = MenusPageState.busy;
     try {
       MenusService menusService = MenusService();
+
+      // priceOptions parametre olarak alınır ve MenusModel'e eklenir
       MenusModel updatedMenu = MenusModel(
         Timestamp.now(),
         currentUser!.name! + " " + currentUser!.lastName!,
         category,
+        category_en,
         content,
+        content_en,
         parentCategory,
+        parentCategory_en,
         currentUser!.name! + " " + currentUser!.lastName!,
         Timestamp.now(),
         menuID,
         imgURL,
         price,
         product,
+        product_en,
+        priceOptions, // priceOptions burada modele ekleniyor
       );
+
       await menusService.updateMenu(updatedMenu);
 
       // Yerel listeyi güncelle
@@ -102,23 +137,43 @@ class MenusPageViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> addMenu(String parentCategory, String category, String product,
-      String content, String price, String imgURL, String menuID) async {
+  Future<void> addMenu(
+      String parentCategory,
+      String parentCategory_en,
+      String category,
+      String category_en,
+      String product,
+      String product_en,
+      String content,
+      String content_en,
+      String price,
+      String imgURL,
+      String menuID,
+      List<Map<String, String>> priceOptions) async {
     state = MenusPageState.busy;
     try {
       MenusService menusService = MenusService();
+
+      // priceOptions parametre olarak alınır ve MenusModel'e eklenir
       MenusModel newMenu = MenusModel(
-          Timestamp.now(),
-          currentUser!.name! + currentUser!.lastName!,
-          category,
-          content,
-          parentCategory,
-          currentUser!.name! + " " + currentUser!.lastName!,
-          Timestamp.now(),
-          menuID,
-          imgURL,
-          price,
-          product);
+        Timestamp.now(),
+        currentUser!.name! + " " + currentUser!.lastName!,
+        category,
+        category_en,
+        content,
+        content_en,
+        parentCategory,
+        parentCategory_en,
+        currentUser!.name! + " " + currentUser!.lastName!,
+        Timestamp.now(),
+        menuID,
+        imgURL,
+        price,
+        product,
+        product_en,
+        priceOptions, // priceOptions burada modele ekleniyor
+      );
+
       await menusService.addMenu(newMenu);
       _menus.add(newMenu);
       state = MenusPageState.idle;

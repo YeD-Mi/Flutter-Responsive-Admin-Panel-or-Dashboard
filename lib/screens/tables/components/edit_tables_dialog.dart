@@ -36,7 +36,7 @@ Future<void> showDetailTableDialog(
             title: Center(
               child: Column(
                 children: [
-                  Text('Masa Düzenle',
+                  Text('Masa Detay',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                   SizedBox(height: spaceHeight),
@@ -56,8 +56,9 @@ Future<void> showDetailTableDialog(
                     SizedBox(height: spaceHeight),
                     TextField(
                       controller: _titleController,
+                      readOnly: true,
                       decoration: InputDecoration(
-                        labelText: 'Masa Adı',
+                        labelText: 'Masa Numarası',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -130,36 +131,39 @@ Future<void> showDetailTableDialog(
                 ),
                 child: Text('Sil'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  myTables
-                      .updateTable(tableInfo.tableID!, "_selectedParentTable",
-                          _titleController.text)
-                      .then((_) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Kategori başarıyla güncellendi'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                    Navigator.of(context).pop();
-                  }).catchError((error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Kategori güncellenirken hata oluştu: $error'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Button color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+              Visibility(
+                visible: false,
+                child: ElevatedButton(
+                  onPressed: () {
+                    myTables
+                        .updateTable(tableInfo.tableID!, "_selectedParentTable",
+                            _titleController.text)
+                        .then((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Kategori başarıyla güncellendi'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    }).catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Kategori güncellenirken hata oluştu: $error'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green, // Button color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                   ),
+                  child: Text('Kaydet'),
                 ),
-                child: Text('Kaydet'),
               )
             ],
           );

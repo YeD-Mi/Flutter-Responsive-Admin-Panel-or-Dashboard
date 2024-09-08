@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 void showAddCategoryDialog(BuildContext context) async {
   final _nameController = TextEditingController();
+  final _nameController_en = TextEditingController();
 
   double spaceHeight;
   if (Responsive.isDesktop(context)) {
@@ -79,7 +80,17 @@ void showAddCategoryDialog(BuildContext context) async {
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: 'Ürün',
+                        labelText: 'Kategori Adı',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spaceHeight),
+                    TextField(
+                      controller: _nameController_en,
+                      decoration: InputDecoration(
+                        labelText: 'Kategori Adı (English)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
@@ -132,6 +143,7 @@ void showAddCategoryDialog(BuildContext context) async {
                     .addNewCategoryAndRefresh(
                   _selectedParentCategory!,
                   _nameController.text,
+                  _nameController_en.text,
                   categoryID,
                 )
                     .then((_) {

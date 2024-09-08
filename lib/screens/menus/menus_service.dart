@@ -20,14 +20,19 @@ class MenusService {
         'creationDate': newMenu.creationDate,
         'creative': newMenu.creative,
         'category': newMenu.category,
+        'category_en': newMenu.category_en,
         'parentCategory': newMenu.parentCategory,
+        'parentCategory_en': newMenu.parentCategory_en,
         'lastModified': newMenu.lastModified,
         'lastModifiedDate': newMenu.lastModifiedDate,
         'menuID': newMenu.menuID,
         'title': newMenu.title,
+        'title_en': newMenu.title_en,
         'contents': newMenu.contents,
+        'contents_en': newMenu.contents_en,
         'price': newMenu.price,
         'image': newMenu.image,
+        'priceOptions': newMenu.priceOptions
       });
     } catch (e) {
       print("Menu ekleme hatası: $e");
@@ -45,11 +50,15 @@ class MenusService {
     try {
       await documentRef.update({
         'category': updatedMenu.category,
+        'category_en': updatedMenu.category_en,
         'parentCategory': updatedMenu.parentCategory,
+        'parentCategory_en': updatedMenu.parentCategory_en,
         'lastModified': updatedMenu.lastModified,
         'lastModifiedDate': updatedMenu.lastModifiedDate,
         'title': updatedMenu.title,
+        'title_en': updatedMenu.title_en,
         'contents': updatedMenu.contents,
+        'contents_en': updatedMenu.contents_en,
         'price': updatedMenu.price,
         'image': updatedMenu.image,
       });

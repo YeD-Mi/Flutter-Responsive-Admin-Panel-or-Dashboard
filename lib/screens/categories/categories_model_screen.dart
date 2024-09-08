@@ -32,9 +32,9 @@ class CategoriesPageViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> addNewCategoryAndRefresh(
-      String parentCategory, String name, String categoryID) async {
-    await addCategory(parentCategory, categoryID, name);
+  Future<void> addNewCategoryAndRefresh(String parentCategory, String name,
+      String name_en, String categoryID) async {
+    await addCategory(parentCategory, categoryID, name, name_en);
     await fetchCategories();
     notifyListeners();
   }
@@ -45,8 +45,8 @@ class CategoriesPageViewModel with ChangeNotifier {
         .toList();
   }
 
-  Future<void> updateCategory(
-      String categoryID, String parentCategory, String name) async {
+  Future<void> updateCategory(String categoryID, String parentCategory,
+      String name, String name_en) async {
     state = CategoriesPageState.busy;
     try {
       CategoriesService categoriesService = CategoriesService();
@@ -55,6 +55,7 @@ class CategoriesPageViewModel with ChangeNotifier {
           currentUser!.name! + " " + currentUser!.lastName!,
           categoryID,
           name,
+          name_en,
           currentUser!.name! + " " + currentUser!.lastName!,
           Timestamp.now(),
           parentCategory);
@@ -68,8 +69,8 @@ class CategoriesPageViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> addCategory(
-      String parentCategory, String categoryID, String name) async {
+  Future<void> addCategory(String parentCategory, String categoryID,
+      String name, String name_en) async {
     state = CategoriesPageState.busy;
     try {
       CategoriesService categoriesService = CategoriesService();
@@ -78,6 +79,7 @@ class CategoriesPageViewModel with ChangeNotifier {
           currentUser!.name! + currentUser!.lastName!,
           categoryID,
           name,
+          name_en,
           currentUser!.name! + " " + currentUser!.lastName!,
           Timestamp.now(),
           parentCategory);
