@@ -4,7 +4,7 @@ class OrdersModel {
   Timestamp? creationDate;
   String? lastModified;
   Timestamp? lastModifiedDate;
-  String? orderID;
+  String? orderId;
   int? totalAmount;
   String? tableNumber;
   String? status;
@@ -14,7 +14,7 @@ class OrdersModel {
       this.creationDate,
       this.lastModified,
       this.lastModifiedDate,
-      this.orderID,
+      this.orderId,
       this.totalAmount,
       this.tableNumber,
       this.status,
@@ -24,7 +24,7 @@ class OrdersModel {
     creationDate = json["creationDate"] as Timestamp?;
     lastModified = json["lastModified"];
     lastModifiedDate = json["lastModifiedDate"];
-    orderID = json["orderID"];
+    orderId = json["orderId"];
     totalAmount = json["totalAmount"];
     tableNumber = json["tableNumber"];
     status = json["status"];
@@ -41,7 +41,7 @@ class OrdersModel {
     data["creationDate"] = creationDate;
     data["lastModified"] = lastModified;
     data["lastModifiedDate"] = lastModifiedDate;
-    data["orderID"] = orderID;
+    data["orderId"] = orderId;
     data["totalAmount"] = totalAmount;
     data["tableNumber"] = tableNumber;
     data["status"] = status;
@@ -62,9 +62,10 @@ class OrderItem {
   String? note;
   int? price;
   int? quantity;
+  String? type;
 
   OrderItem(this.menuItemId, this.menuItemTitle, this.note, this.price,
-      this.quantity);
+      this.quantity, this.type);
 
   OrderItem.fromJson(Map<String, dynamic> json) {
     menuItemId = json["menuItemId"];
@@ -72,6 +73,7 @@ class OrderItem {
     note = json["note"];
     price = json["price"];
     quantity = json["quantity"];
+    type = json["type"];
   }
 
   Map<String, dynamic> toJson() {
@@ -81,6 +83,8 @@ class OrderItem {
     data["note"] = note;
     data["price"] = price;
     data["quantity"] = quantity;
+    data["type"] = type;
+
     return data;
   }
 }

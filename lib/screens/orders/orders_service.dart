@@ -6,9 +6,9 @@ class OrdersService {
       FirebaseFirestore.instance.collection('orders');
 
   Stream<QuerySnapshot> getOrders() {
-    var ref =
-        _ordersCollection.orderBy("creationDate", descending: true).snapshots();
-    return ref;
+    return _ordersCollection
+        .orderBy("creationDate", descending: true)
+        .snapshots();
   }
 
   Future<void> deleteOrder(String orderID) {

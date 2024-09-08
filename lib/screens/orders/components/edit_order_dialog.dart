@@ -154,7 +154,7 @@ Future<void> showDetailOrderDialog(
               ElevatedButton(
                 onPressed: () {
                   Provider.of<OrdersPageViewModel>(context, listen: false)
-                      .deleteOrder(orderInfo.orderID!)
+                      .deleteOrder(orderInfo.orderId!)
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -184,7 +184,7 @@ Future<void> showDetailOrderDialog(
                 onPressed: () {
                   myOrders
                       .updateOrder(
-                    orderInfo.orderID!,
+                    orderInfo.orderId!,
                     _productController.text,
                   )
                       .then((_) {
