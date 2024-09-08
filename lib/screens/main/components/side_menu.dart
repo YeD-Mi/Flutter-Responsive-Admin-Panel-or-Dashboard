@@ -13,8 +13,11 @@ class SideMenu extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: [
-          DrawerHeader(
-            child: Image.asset("assets/images/enjula-logo1.png"),
+          InkWell(
+            onTap: () {},
+            child: DrawerHeader(
+              child: Image.asset("assets/images/enjula-logo3.png"),
+            ),
           ),
           DrawerListTile(
             title: "Ana Sayfa",
@@ -51,7 +54,7 @@ class SideMenu extends StatelessWidget {
               onMenuItemSelected(4);
             },
           ),
-          DrawerListTile(
+          /*DrawerListTile(
             title: "Profil",
             svgSrc: "assets/icons/menu_store.svg",
             press: () {
@@ -64,7 +67,7 @@ class SideMenu extends StatelessWidget {
             press: () {
               onMenuItemSelected(6);
             },
-          ),
+          ),*/
         ],
       ),
     );

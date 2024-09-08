@@ -27,7 +27,7 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-        Expanded(child: SearchField()),
+        //Expanded(child: SearchField()),
         ProfileCard()
       ],
     );
@@ -54,15 +54,15 @@ class ProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.asset(
-            "assets/images/profile_pic.png",
+          Image.network(
+            "https://cdn4.iconfinder.com/data/icons/avatars-21/512/avatar-circle-human-female-5-512.png",
             height: 38,
           ),
           if (!Responsive.isMobile(context))
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-              child: Text("Ayşegül IRMAK"),
+              child: Text(currentUser!.name! + " " + currentUser!.lastName!),
             ),
           Icon(Icons.keyboard_arrow_down),
         ],

@@ -8,13 +8,13 @@ import 'package:provider/provider.dart';
 
 Future<void> showDetailOrderDialog(
     OrdersModel orderInfo, BuildContext context) async {
-  final _productController = TextEditingController();
-  final _contentController = TextEditingController();
+  final _orderIDController = TextEditingController();
   final _priceController = TextEditingController();
+  final _orderStatusController = TextEditingController();
 
-  _productController.text = orderInfo.orderId!;
-  _contentController.text = orderInfo.status!;
-  _priceController.text = orderInfo.status!;
+  _orderIDController.text = orderInfo.orderId!;
+  _priceController.text = orderInfo.totalAmount!.toString();
+  _orderStatusController.text = orderInfo.status!;
 
   double spaceHeight;
   if (Responsive.isDesktop(context)) {
@@ -24,8 +24,7 @@ Future<void> showDetailOrderDialog(
   } else {
     spaceHeight = 10.0;
   }
-  String? _selectedParentCategory = orderInfo.status!;
-  List<String> _parentCategories = ["Sipariş Alındı", "İçecek"];
+
   final myOrders = context.read<OrdersPageViewModel>();
 
   showDialog(
@@ -42,7 +41,7 @@ Future<void> showDetailOrderDialog(
             title: Center(
               child: Column(
                 children: [
-                  Text('Sipariş Düzenle',
+                  Text('Sipariş Düzenle (Masa ${orderInfo.tableNumber})',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                   SizedBox(height: spaceHeight),
@@ -54,70 +53,108 @@ Future<void> showDetailOrderDialog(
             ),
             content: SingleChildScrollView(
               child: Container(
-                width: SizeConstants.width * 0.3,
+                width: SizeConstants.width * 0.6,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(height: spaceHeight),
                     DropdownButtonFormField<String>(
-                      value: _selectedParentCategory,
+                      value: _orderStatusController.text.isNotEmpty
+                          ? _orderStatusController.text
+                          : null, // Default değeri ayarla
                       decoration: InputDecoration(
-                        labelText: 'Üst Kategori',
+                        labelText: 'Sipariş Durumu',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                      items: _parentCategories.map((String category) {
+                      items: ['Sipariş Alındı', 'İptal Edildi', 'Tamamlandı']
+                          .map((String status) {
                         return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
+                          value: status,
+                          child: Text(status),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
-                        setState(() {});
+                        setState(() {
+                          _orderStatusController.text = newValue ??
+                              ''; // Seçilen değeri _priceController'a yaz
+                        });
                       },
                     ),
+
                     SizedBox(height: spaceHeight),
                     TextField(
-                      controller: _productController,
+                      controller: _orderIDController,
+                      readOnly: true,
                       decoration: InputDecoration(
-                        labelText: 'Ürün',
+                        labelText: 'Sipariş Numarası',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
                     ),
-                    SizedBox(height: spaceHeight),
-                    TextField(
-                      controller: _contentController,
-                      maxLines: 3, // İçerik alanının üç satıra sığması için
-                      decoration: InputDecoration(
-                        labelText: 'İçerik',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                    ),
+
                     SizedBox(height: spaceHeight),
                     TextField(
                       controller: _priceController,
+                      readOnly: true,
                       decoration: InputDecoration(
-                        labelText: 'Fiyat',
+                        labelText: 'Toplam Tutar (TL)',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                      keyboardType: TextInputType.number,
                     ),
+
                     SizedBox(height: spaceHeight),
-                    // Oluşturan ve Oluşturma Tarihi
+                    if (orderInfo.items != null &&
+                        orderInfo.items!.isNotEmpty) ...[
+                      Text(
+                        'Sipariş Kalemleri:',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: orderInfo.items!.length,
+                        itemBuilder: (context, index) {
+                          final item = orderInfo.items![index];
+                          return Card(
+                            color: Colors.grey.shade700,
+                            margin: EdgeInsets.symmetric(vertical: 5.0),
+                            child: ListTile(
+                              title: Text(
+                                item.menuItemTitle ?? 'Ürün Adı Yok',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Fiyat: ${item.price ?? 0} TL',
+                                      style:
+                                          TextStyle(color: Colors.grey[300])),
+                                  Text('Adet: ${item.quantity ?? 0}',
+                                      style:
+                                          TextStyle(color: Colors.grey[300])),
+                                  Text('Tür: ${item.type ?? 'Bilinmiyor'}',
+                                      style:
+                                          TextStyle(color: Colors.grey[300])),
+                                  if (item.note != null &&
+                                      item.note!.isNotEmpty)
+                                    Text('Not: ${item.note}',
+                                        style:
+                                            TextStyle(color: Colors.grey[300])),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                     SizedBox(height: 1.5 * spaceHeight),
-                    Text(
-                      "Oluşturan: " + orderInfo.status!,
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    SizedBox(height: 5),
                     Text(
                       "Oluşturma Tarihi: " +
                           DateFormat('dd-MM-yyyy HH:mm')
@@ -131,7 +168,7 @@ Future<void> showDetailOrderDialog(
                         orderInfo.lastModified!.isNotEmpty) ...[
                       Text(
                         "Son Değiştiren: " + orderInfo.lastModified!,
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: TextStyle(color: Colors.grey[600]),
                       ),
                       SizedBox(height: 5),
                     ],
@@ -195,7 +232,7 @@ Future<void> showDetailOrderDialog(
                   myOrders
                       .updateOrder(
                     orderInfo.orderId!,
-                    _productController.text,
+                    _orderStatusController.text,
                   )
                       .then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(

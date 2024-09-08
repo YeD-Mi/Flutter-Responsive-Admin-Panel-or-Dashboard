@@ -3,6 +3,7 @@ import 'package:admin/constants.dart';
 import 'package:admin/date_service.dart';
 import 'package:admin/responsive.dart';
 import 'package:admin/screens/menus/menus_model_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
@@ -31,7 +32,6 @@ void showAddMenuDialog(BuildContext context) async {
 
   List<String> _categories = [];
   String? _selectedCategory;
-  String? _selectedCategory_en;
 
   List<Map<String, String>> priceOptions = [{}]; // Başlangıçta bir boş alan
 
@@ -45,7 +45,6 @@ void showAddMenuDialog(BuildContext context) async {
         .map((category) => category.name!)
         .toList();
     _selectedCategory = _categories.first;
-    _selectedCategory_en = _categories.first;
   }
 
   showDialog(
@@ -75,7 +74,7 @@ void showAddMenuDialog(BuildContext context) async {
           builder: (context, setState) {
             return SingleChildScrollView(
               child: Container(
-                  width: SizeConstants.width * 0.3,
+                  width: SizeConstants.width * 0.5,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -198,24 +197,6 @@ void showAddMenuDialog(BuildContext context) async {
                                 priceOptions.add(
                                     {"type": "", "type_en": "", "price": ""});
                               });
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Uyarı'),
-                                    content:
-                                        Text(priceOptions.length.toString()),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: Text('Tamam'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
                             },
                             icon: Icon(Icons.add),
                             label: Text("Yeni Kırılım"),
@@ -336,7 +317,6 @@ void showAddMenuDialog(BuildContext context) async {
             onPressed: () async {
               if (_productController.text.isEmpty ||
                   _priceController.text.isEmpty) {
-                // Ürün veya fiyat alanı boşsa uyarı göster
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -366,13 +346,19 @@ void showAddMenuDialog(BuildContext context) async {
                   imageUrl =
                       await uploadImageToFirebase(selectedImageUrl!, menuID);
                 }
+
+                // Veritabanından 'name_en' değerini al
+                String? categoryNameEn =
+                    await getCategoryNameEn(_selectedCategory!);
+
                 // Verileri Firestore'a kaydet
                 myMenus
                     .addNewMenuAndRefresh(
                         _selectedParentCategory!,
                         _selectedParentCategory!,
                         _selectedCategory!,
-                        _selectedCategory_en!,
+                        categoryNameEn ??
+                            '', // Eğer name_en bulunamazsa boş string kullan
                         _productController.text,
                         _productController_en.text,
                         _contentController.text,
@@ -425,5 +411,27 @@ Future<String> uploadImageToFirebase(String imageUrl, String menuID) async {
   } catch (e) {
     print("Resim yükleme hatası: $e");
     return "";
+  }
+}
+
+Future<String?> getCategoryNameEn(String categoryName) async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  try {
+    // 'categories' koleksiyonundan veriyi çek
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('categories')
+        .where('name', isEqualTo: categoryName)
+        .get();
+
+    // Sorgudan sonuç varsa, 'name_en' değerini al
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      return documentSnapshot['name_en'] as String?;
+    } else {
+      return null; // Veriyi bulamazsa null döner
+    }
+  } catch (e) {
+    print('Veri çekme hatası: $e');
+    return null;
   }
 }

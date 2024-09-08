@@ -1,3 +1,4 @@
+import 'package:admin/date_service.dart';
 import 'package:admin/screens/menus/components/add_menu_dialog.dart';
 import 'package:admin/screens/menus/components/edit_menu_dialog.dart';
 import 'package:flutter/material.dart';
@@ -16,25 +17,47 @@ class Menusinfo extends StatefulWidget {
 
 class _MenusInfoState extends State<Menusinfo> {
   late Future<void> _fetchMenusFuture;
+  late Future<void> _fetchCategoriesFuture;
+  String _selectedCategory = 'Hepsi'; // Default category
+  List<String> _categories = []; // Ensure this is a List<String>
 
   @override
   void initState() {
     super.initState();
-    _fetchMenusFuture =
-        Provider.of<MenusPageViewModel>(context, listen: false).fetchMenus();
+    final viewModel = Provider.of<MenusPageViewModel>(context, listen: false);
+    _fetchMenusFuture = viewModel.fetchMenus();
+    _fetchCategoriesFuture = viewModel.fetchCategories().then((_) {
+      setState(() {
+        // Convert List<CategoriesModel> to List<String> without nulls
+        _categories = ['Hepsi'] +
+            viewModel.categories
+                .map((cat) =>
+                    cat.name ??
+                    '') // Replace null with empty string or handle null values as needed
+                .where((name) =>
+                    name.isNotEmpty) // Ensure no empty strings are included
+                .toList();
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final myMenus = Provider.of<MenusPageViewModel>(context);
+    final viewModel = Provider.of<MenusPageViewModel>(context);
     return FutureBuilder(
-      future: _fetchMenusFuture,
+      future: Future.wait([_fetchMenusFuture, _fetchCategoriesFuture]),
       builder: (context, snapshot) {
-        if (myMenus.state == MenusPageState.busy) {
+        if (viewModel.state == MenusPageState.busy) {
           return Center(child: CircularProgressIndicator());
-        } else if (myMenus.state == MenusPageState.error) {
-          return Center(child: Text('Error loading Menus'));
+        } else if (viewModel.state == MenusPageState.error) {
+          return Center(child: Text('Error loading data'));
         } else {
+          // Filter menus based on selected category
+          List<MenusModel> filteredMenus = viewModel.menus.where((menu) {
+            return _selectedCategory == 'Hepsi' ||
+                menu.category == _selectedCategory;
+          }).toList();
+
           return Container(
             padding: EdgeInsets.all(defaultPadding),
             decoration: BoxDecoration(
@@ -45,8 +68,23 @@ class _MenusInfoState extends State<Menusinfo> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Dropdown Button for category filter
+                    DropdownButton<String>(
+                      value: _selectedCategory,
+                      items: _categories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedCategory = newValue!;
+                        });
+                      },
+                    ),
                     ElevatedButton.icon(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.symmetric(
@@ -68,31 +106,19 @@ class _MenusInfoState extends State<Menusinfo> {
                   child: DataTable(
                     columnSpacing: defaultPadding,
                     columns: [
-                      DataColumn(
-                        label: Text("Üst Kategori"),
-                      ),
-                      DataColumn(
-                        label: Text("Kategori"),
-                      ),
-                      DataColumn(
-                        label: Text("Ürün"),
-                      ),
-                      DataColumn(
-                        label: Text("Fiyat"),
-                      ),
-                      DataColumn(
-                        label: Text("Görsel"),
-                      ),
-                      DataColumn(
-                        label: Text(" "),
-                      ),
+                      DataColumn(label: Text("Kategori")),
+                      DataColumn(label: Text("Ürün")),
+                      DataColumn(label: Text("Fiyat")),
+                      DataColumn(label: Text("Görsel")),
+                      DataColumn(label: Text("Son Değişiklik")),
+                      DataColumn(label: Text(" ")),
                     ],
                     rows: List.generate(
-                      myMenus.menus.length,
-                      (index) => menuInfoDataRow(myMenus.menus[index], context),
+                      filteredMenus.length,
+                      (index) => menuInfoDataRow(filteredMenus[index], context),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           );
@@ -105,7 +131,6 @@ class _MenusInfoState extends State<Menusinfo> {
 DataRow menuInfoDataRow(MenusModel menuInfo, BuildContext context) {
   return DataRow(
     cells: [
-      DataCell(Text(menuInfo.parentCategory!)),
       DataCell(Text(menuInfo.category!)),
       DataCell(Text(menuInfo.title!)),
       DataCell(Text(menuInfo.price!)),
@@ -143,6 +168,8 @@ DataRow menuInfoDataRow(MenusModel menuInfo, BuildContext context) {
             );
           },
           child: Icon(Icons.image))),
+      DataCell(Text(DateService()
+          .convertTimeStampYearHoursFormat(menuInfo.lastModifiedDate!))),
       DataCell(ElevatedButton(
           onPressed: () {
             showDetailMenuDialog(menuInfo, context);

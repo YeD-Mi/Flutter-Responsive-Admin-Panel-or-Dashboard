@@ -19,7 +19,8 @@ class _OrdersInfoState extends State<Ordersinfo> {
   final List<String> _parentCategories = [
     "Hepsi",
     "Sipariş Alındı",
-    "Tamamlandı"
+    "Tamamlandı",
+    "İptal Edildi"
   ];
 
   @override
@@ -27,7 +28,9 @@ class _OrdersInfoState extends State<Ordersinfo> {
     super.initState();
     _selectedParentCategory = _parentCategories[0];
     // Dinleme işlemini başlatıyoruz
-    Provider.of<OrdersPageViewModel>(context, listen: false).listenToOrders();
+    final ordersViewModel =
+        Provider.of<OrdersPageViewModel>(context, listen: false);
+    ordersViewModel.listenToOrders();
   }
 
   @override
@@ -71,6 +74,8 @@ class _OrdersInfoState extends State<Ordersinfo> {
                     onChanged: (String? newValue) {
                       setState(() {
                         _selectedParentCategory = newValue;
+                        // Filtreleme fonksiyonunu çağır
+                        myOrders.filterOrdersByStatus(newValue);
                       });
                     },
                   ),
@@ -122,7 +127,7 @@ class _OrdersInfoState extends State<Ordersinfo> {
 DataRow orderInfoDataRow(OrdersModel orderInfo, BuildContext context) {
   return DataRow(
     cells: [
-      DataCell(Text(orderInfo.tableNumber ?? '')),
+      DataCell(Text("Masa ${orderInfo.tableNumber ?? ''}")),
       DataCell(Text(orderInfo.orderId ?? '')),
       DataCell(Text(DateService()
           .convertTimeStampYearHoursFormat(orderInfo.creationDate!))),

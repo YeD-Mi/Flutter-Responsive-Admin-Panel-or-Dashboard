@@ -1,3 +1,4 @@
+import 'package:admin/date_service.dart';
 import 'package:admin/models/CategoriesModel.dart';
 import 'package:admin/screens/categories/categories_model_screen.dart';
 import 'package:admin/screens/categories/components/add_category_dialog.dart';
@@ -73,10 +74,10 @@ class _CategoriesInfoState extends State<Categoriesinfo> {
                         label: Text("Kategori Adı"),
                       ),
                       DataColumn(
-                        label: Text("Üst Kategori"),
+                        label: Text("Oluşturan"),
                       ),
                       DataColumn(
-                        label: Text("Oluşturan"),
+                        label: Text("Son Değişiklik"),
                       ),
                       DataColumn(
                         label: Text(" "),
@@ -103,8 +104,9 @@ DataRow categoryInfoDataRow(
   return DataRow(
     cells: [
       DataCell(Text(categoryInfo.name!)),
-      DataCell(Text(categoryInfo.parentCategory!)),
       DataCell(Text(categoryInfo.creative!)),
+      DataCell(Text(DateService()
+          .convertTimeStampYearHoursFormat(categoryInfo.lastModifiedDate!))),
       DataCell(ElevatedButton(
           onPressed: () {
             showDetailCategoryDialog(categoryInfo, context);

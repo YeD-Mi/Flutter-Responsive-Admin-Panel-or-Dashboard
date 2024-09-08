@@ -3,6 +3,7 @@ import 'package:admin/constants.dart';
 import 'package:admin/models/MenusModel.dart';
 import 'package:admin/responsive.dart';
 import 'package:admin/screens/menus/menus_model_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:intl/intl.dart';
@@ -37,8 +38,6 @@ Future<void> showDetailMenuDialog(
   String? _selectedParentCategory = menuInfo.parentCategory!;
   List<String> _parentCategories = ["Yiyecek", "İçecek"];
 
-  List<Map<String, String>> priceOptions = [{}]; // Başlangıçta bir boş alan
-
   String? _selectedCategory;
   List<String> _categories = [];
 
@@ -51,8 +50,26 @@ Future<void> showDetailMenuDialog(
         .getFilteredCategories(_selectedParentCategory)
         .map((category) => category.name!)
         .toList();
-    _selectedCategory = menuInfo.category;
+
+    // Kategoriler doluysa ve selectedCategory henüz atanmadıysa ilk öğeye ayarlayın
+    if (_categories.isNotEmpty) {
+      _selectedCategory = _categories.contains(menuInfo.category)
+          ? menuInfo
+              .category // Eğer veritabanından gelen kategori listede varsa, onu kullan
+          : _categories.first; // Yoksa, ilk öğeye ayarlayın
+    }
   }
+
+  List<Map<String, String>> priceOptions = menuInfo.priceOptions?.map((option) {
+        return {
+          "type": option['type'] ?? "",
+          "type_en": option['type_en'] ?? "",
+          "price": option['price'] ?? ""
+        };
+      }).toList() ??
+      [
+        {"type": "", "type_en": "", "price": ""}
+      ];
 
   showDialog(
     context: context,
@@ -80,7 +97,7 @@ Future<void> showDetailMenuDialog(
             ),
             content: SingleChildScrollView(
               child: Container(
-                width: SizeConstants.width * 0.3,
+                width: SizeConstants.width * 0.5,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -186,6 +203,95 @@ Future<void> showDetailMenuDialog(
                       ),
                       keyboardType: TextInputType.number,
                     ),
+                    SizedBox(height: spaceHeight),
+                    Row(
+                      children: [
+                        Icon(Icons.category, color: Colors.blue),
+                        SizedBox(width: 8.0),
+                        Text(
+                          "Alt Kırılımlar:",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        Spacer(),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              priceOptions.add(
+                                  {"type": "", "type_en": "", "price": ""});
+                            });
+                          },
+                          icon: Icon(Icons.add),
+                          label: Text("Yeni Kırılım"),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blue, // Text color
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: spaceHeight / 2),
+                    // Price Options Fields
+                    ...priceOptions.map((option) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: TextEditingController(
+                                      text: option['type']),
+                                  decoration: InputDecoration(
+                                    labelText: 'Açıklama',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    option['type'] = value;
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: TextEditingController(
+                                      text: option['type_en']),
+                                  decoration: InputDecoration(
+                                    labelText: 'Açıklama (English)',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    option['type_en'] = value;
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: TextEditingController(
+                                      text: option['price']),
+                                  decoration: InputDecoration(
+                                    labelText: 'Artı Fiyat',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    option['price'] = value;
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          )
+                        ],
+                      );
+                    }).toList(),
                     SizedBox(height: spaceHeight),
                     // Image display and picker
                     Row(
@@ -298,14 +404,16 @@ Future<void> showDetailMenuDialog(
                 child: Text('Sil'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  String? categoryNameEn =
+                      await getCategoryNameEn(_selectedCategory!);
                   myMenus
                       .updateMenu(
                           menuInfo.menuID!,
                           _selectedParentCategory!,
                           _selectedParentCategory!,
                           _selectedCategory!,
-                          _selectedCategory!,
+                          categoryNameEn ?? '',
                           _productController.text,
                           _productController_en.text,
                           _contentController.text,
@@ -345,4 +453,26 @@ Future<void> showDetailMenuDialog(
       );
     },
   );
+}
+
+Future<String?> getCategoryNameEn(String categoryName) async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  try {
+    // 'categories' koleksiyonundan veriyi çek
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('categories')
+        .where('name', isEqualTo: categoryName)
+        .get();
+
+    // Sorgudan sonuç varsa, 'name_en' değerini al
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+      return documentSnapshot['name_en'] as String?;
+    } else {
+      return null; // Veriyi bulamazsa null döner
+    }
+  } catch (e) {
+    print('Veri çekme hatası: $e');
+    return null;
+  }
 }

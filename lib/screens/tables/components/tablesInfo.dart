@@ -69,7 +69,7 @@ class _TablesInfoState extends State<Tablesinfo> {
                     columnSpacing: defaultPadding,
                     columns: [
                       DataColumn(
-                        label: Text("Masa Adı"),
+                        label: Text("Masa No"),
                       ),
                       DataColumn(
                         label: Text("QR"),
