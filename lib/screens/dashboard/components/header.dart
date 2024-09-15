@@ -56,8 +56,8 @@ class ProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.network(
-            "https://cdn4.iconfinder.com/data/icons/avatars-21/512/avatar-circle-human-female-5-512.png",
+          Image.asset(
+            "assets/images/profil.png",
             height: 38,
           ),
           if (!Responsive.isMobile(context))

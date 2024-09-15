@@ -119,7 +119,7 @@ class MenusPageViewModel with ChangeNotifier {
         price,
         product,
         product_en,
-        priceOptions, // priceOptions burada modele ekleniyor
+        priceOptions,
       );
 
       await menusService.updateMenu(updatedMenu);
@@ -189,6 +189,20 @@ class MenusPageViewModel with ChangeNotifier {
       await menusService.deleteMenu(menuID);
       _menus.removeWhere((menu) => menu.menuID == menuID);
       state = MenusPageState.idle;
+    } catch (e) {
+      state = MenusPageState.error;
+    }
+  }
+
+  Future<void> updateStarDay(
+    String menuID,
+  ) async {
+    state = MenusPageState.busy;
+    try {
+      MenusService menusService = MenusService();
+      await menusService.updateStarDay(menuID);
+      state = MenusPageState.idle;
+      notifyListeners();
     } catch (e) {
       state = MenusPageState.error;
     }

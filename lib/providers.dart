@@ -1,5 +1,6 @@
 import 'package:admin/controllers/MenuAppController.dart';
 import 'package:admin/screens/categories/categories_model_screen.dart';
+import 'package:admin/screens/dashboard/dasboard_model_screen.dart';
 import 'package:admin/screens/login/login_model_screen.dart';
 import 'package:admin/screens/menus/menus_model_screen.dart';
 import 'package:admin/screens/orders/orders_model_screen.dart';
@@ -25,5 +26,8 @@ List<SingleChildWidget> providers = [
   ),
   ChangeNotifierProvider(
     create: (context) => OrdersPageViewModel(),
+  ),
+  ChangeNotifierProvider(
+    create: (context) => DashboardPageViewModel(),
   ),
 ];

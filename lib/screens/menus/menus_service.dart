@@ -6,6 +6,9 @@ class MenusService {
   final CollectionReference _menusCollection =
       FirebaseFirestore.instance.collection('menus');
 
+  final CollectionReference _starDayCollection =
+      FirebaseFirestore.instance.collection('star_of_the_day');
+
   Stream<QuerySnapshot> getMenus() {
     var ref =
         _menusCollection.orderBy("creationDate", descending: true).snapshots();
@@ -61,6 +64,21 @@ class MenusService {
         'contents_en': updatedMenu.contents_en,
         'price': updatedMenu.price,
         'image': updatedMenu.image,
+        'priceOptions': updatedMenu.priceOptions
+      });
+    } catch (e) {
+      print("Menu güncelleme hatası: $e");
+      throw Exception("Menu güncellenirken bir hata oluştu.");
+    }
+  }
+
+  Future<void> updateStarDay(String menuID) async {
+    DocumentReference documentRef =
+        _starDayCollection.doc("Gcux7yTAOqFeikTGpb1I");
+
+    try {
+      await documentRef.update({
+        'menu_id': menuID,
       });
     } catch (e) {
       print("Menu güncelleme hatası: $e");

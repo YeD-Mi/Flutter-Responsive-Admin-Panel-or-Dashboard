@@ -1,4 +1,6 @@
 import 'package:admin/controllers/MenuAppController.dart';
+import 'package:admin/main.dart';
+import 'package:admin/personelLocale.dart';
 import 'package:admin/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -54,17 +56,43 @@ class ProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.network(
-            "https://cdn4.iconfinder.com/data/icons/avatars-21/512/avatar-circle-human-female-5-512.png",
+          Image.asset(
+            "assets/images/profil.png",
             height: 38,
           ),
           if (!Responsive.isMobile(context))
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-              child: Text(currentUser!.name! + " " + currentUser!.lastName!),
+              child: Text(
+                (currentUser?.name ?? "Guest") +
+                    " " +
+                    (currentUser?.lastName ?? ""),
+                style: TextStyle(fontSize: 16),
+              ),
             ),
-          Icon(Icons.keyboard_arrow_down),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'logout') {
+                PersonalLocale().clearCurrentUserID();
+                // Mevcut sayfayı kapatmak için
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyApp()),
+                );
+              }
+            },
+            icon: Icon(Icons.keyboard_arrow_down),
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Text('Oturumu Kapat'),
+                ),
+              ];
+            },
+          ),
         ],
       ),
     );

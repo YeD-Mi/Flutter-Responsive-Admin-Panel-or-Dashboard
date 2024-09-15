@@ -2,6 +2,7 @@ import 'package:admin/models/TablesModel.dart';
 import 'package:admin/screens/tables/components/add_tables_dialog.dart';
 import 'package:admin/screens/tables/components/edit_tables_dialog.dart';
 import 'package:admin/screens/tables/tables_model_screen.dart';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:admin/responsive.dart';
 import 'package:provider/provider.dart';
@@ -97,11 +98,18 @@ class _TablesInfoState extends State<Tablesinfo> {
   }
 }
 
+void downloadFile(String url, String fileName) {
+  html.AnchorElement(href: url)
+    ..setAttribute('download', fileName)
+    ..click();
+}
+
 DataRow tableInfoDataRow(TablesModel tableInfo, BuildContext context) {
   return DataRow(
     cells: [
       DataCell(Text(tableInfo.title!)),
-      DataCell(InkWell(
+      DataCell(
+        InkWell(
           onTap: () {
             showDialog(
               context: context,
@@ -111,7 +119,7 @@ DataRow tableInfoDataRow(TablesModel tableInfo, BuildContext context) {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Container(
-                    width: SizeConstants.width * 0.5,
+                    width: SizeConstants.width * 0.3,
                     height: SizeConstants.height * 0.5,
                     child: Column(
                       children: [
@@ -121,11 +129,24 @@ DataRow tableInfoDataRow(TablesModel tableInfo, BuildContext context) {
                             fit: BoxFit.contain,
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Kapat'),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                downloadFile(tableInfo.qrURL!,
+                                    "Masa" + tableInfo.title! + "QR");
+                              },
+                              child: Text('İndir'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Kapat'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -134,7 +155,9 @@ DataRow tableInfoDataRow(TablesModel tableInfo, BuildContext context) {
               },
             );
           },
-          child: Icon(Icons.image))),
+          child: Icon(Icons.image),
+        ),
+      ),
       DataCell(Text(tableInfo.creative!)),
       DataCell(ElevatedButton(
           onPressed: () {
